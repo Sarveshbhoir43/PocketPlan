@@ -22,7 +22,12 @@
             </intent-filter>
         </activity>
 
+
 <!--        <activity android:name=".RegisterActivity"/>-->
+
+    </application>
+
+
 
     </application>
 
