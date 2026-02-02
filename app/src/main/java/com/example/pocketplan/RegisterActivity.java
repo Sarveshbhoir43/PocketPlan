@@ -144,4 +144,6 @@ public class RegisterActivity extends AppCompatActivity {
         etOtp.setText("");
         generatedOtp = "";
     }
+
 }
+

@@ -175,4 +175,5 @@ public class DBHelper extends SQLiteOpenHelper {
     public boolean isBudgetExceeded(int userId) {
         return getTotalExpense(userId) > getBudget(userId);
     }
+
 }
