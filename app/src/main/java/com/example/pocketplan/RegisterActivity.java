@@ -1,11 +1,9 @@
 package com.example.pocketplan;
 
 import android.os.Bundle;
-import android.util.Patterns;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Random;
-import db.DBHelper;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -14,14 +12,11 @@ public class RegisterActivity extends AppCompatActivity {
     TextView tvResendOtp;
 
     String generatedOtp = "";
-    DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
-        dbHelper = new DBHelper(this); // initialize database
 
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
@@ -34,11 +29,9 @@ public class RegisterActivity extends AppCompatActivity {
         btnSubmit = findViewById(R.id.btnSubmit);
         tvResendOtp = findViewById(R.id.tvResendOtp);
 
-        // Generate OTP
         btnGenerateOtp.setOnClickListener(v -> generateOtp());
         tvResendOtp.setOnClickListener(v -> generateOtp());
 
-        // Submit registration
         btnSubmit.setOnClickListener(v -> validateForm());
     }
 
@@ -47,7 +40,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         if (phone.length() != 10) {
             etPhone.setError("Enter 10 digit phone number");
-            etPhone.requestFocus();
             return;
         }
 
@@ -67,7 +59,6 @@ public class RegisterActivity extends AppCompatActivity {
         String phone = etPhone.getText().toString();
         String otp = etOtp.getText().toString();
 
-        // ===== Validation =====
         if (name.isEmpty()) {
             etName.setError("Name is required");
             etName.requestFocus();
@@ -122,28 +113,6 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // ===== Save user to DB =====
-        boolean registered = dbHelper.registerUser(name, email, pass, phone);
-        if (!registered) {
-            Toast.makeText(this, "User already exists with this email or phone", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        Toast.makeText(this, "Registration Successful!", Toast.LENGTH_LONG).show();
-
-        // ===== Clear form for new registration =====
-        clearForm();
-    }
-
-    private void clearForm() {
-        etName.setText("");
-        etEmail.setText("");
-        etPassword.setText("");
-        etConfirmPassword.setText("");
-        etPhone.setText("");
-        etOtp.setText("");
-        generatedOtp = "";
     }
 
 }
-
