@@ -1,5 +1,6 @@
 package com.example.pocketplan;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
@@ -122,7 +123,13 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, "Registration Successful", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(RegisterActivity.this, DashboardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+
     }
 
 }

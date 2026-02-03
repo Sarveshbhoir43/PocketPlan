@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Background circle -->
+    <path
+        android:fillColor="#E0E7FF"
+        android:pathData="M60,60m-60,0a60,60 0,1,1 120,0a60,60 0,1,1 -120,0" />
+    
+    <!-- Person icon -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M60,35c8.28,0 15,6.72 15,15s-6.72,15 -15,15 -15,-6.72 -15,-15 6.72,-15 15,-15zM60,70c-15,0 -35,7.5 -35,15v10h70v-10c0,-7.5 -20,-15 -35,-15z" />
+</vector>
