@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Random;
+import android.util.Patterns;
 
 public class RegisterActivity extends AppCompatActivity {
 
