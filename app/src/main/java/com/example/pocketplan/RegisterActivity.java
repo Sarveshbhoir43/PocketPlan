@@ -1,10 +1,12 @@
 package com.example.pocketplan;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Random;
 import android.util.Patterns;
+
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -60,12 +62,14 @@ public class RegisterActivity extends AppCompatActivity {
         String phone = etPhone.getText().toString();
         String otp = etOtp.getText().toString();
 
+        // Name
         if (name.isEmpty()) {
             etName.setError("Name is required");
             etName.requestFocus();
             return;
         }
 
+        // Email
         if (email.isEmpty()) {
             etEmail.setError("Email is required");
             etEmail.requestFocus();
@@ -78,24 +82,28 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+        // Password
         if (pass.isEmpty()) {
             etPassword.setError("Password is required");
             etPassword.requestFocus();
             return;
         }
 
+        // Confirm password
         if (!pass.equals(cpass)) {
             etConfirmPassword.setError("Passwords do not match");
             etConfirmPassword.requestFocus();
             return;
         }
 
+        // Phone
         if (phone.length() != 10) {
             etPhone.setError("Phone number must be 10 digits");
             etPhone.requestFocus();
             return;
         }
 
+        // OTP
         if (otp.isEmpty()) {
             etOtp.setError("OTP is required");
             etOtp.requestFocus();
@@ -114,6 +122,7 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+        Toast.makeText(this, "Registration Successful", Toast.LENGTH_LONG).show();
     }
 
 }
