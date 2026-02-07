@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Extra large screen dimensions (large tablets 10"+) -->
+    
+    <!-- Spacing -->
+    <dimen name="spacing_xsmall">8dp</dimen>
+    <dimen name="spacing_small">16dp</dimen>
+    <dimen name="spacing_medium">32dp</dimen>
+    <dimen name="spacing_large">48dp</dimen>
+    <dimen name="spacing_xlarge">64dp</dimen>
+    
+    <!-- Card padding -->
+    <dimen name="card_horizontal_padding">64dp</dimen>
+    <dimen name="card_top_padding">56dp</dimen>
+    <dimen name="card_bottom_padding">72dp</dimen>
+    
+    <!-- Icon -->
+    <dimen name="icon_size">160dp</dimen>
+    <dimen name="icon_margin_top">120dp</dimen>
+    
+    <!-- Description -->
+    <dimen name="description_horizontal_padding">48dp</dimen>
+    
+    <!-- Welcome section -->
+    <dimen name="welcome_margin_top">140dp</dimen>
+    
+    <!-- Button -->
+    <dimen name="button_horizontal_margin">120dp</dimen>
+    <dimen name="button_margin_top">40dp</dimen>
+    <dimen name="button_margin_bottom">48dp</dimen>
+    <dimen name="button_min_height">72dp</dimen>
+    
+    <!-- Text sizes -->
+    <dimen name="text_app_name">56sp</dimen>
+    <dimen name="text_tagline">24sp</dimen>
+    <dimen name="text_description">24sp</dimen>
+    <dimen name="text_welcome">56sp</dimen>
+    <dimen name="text_subtitle">28sp</dimen>
+    <dimen name="text_button">24sp</dimen>
+</resources>

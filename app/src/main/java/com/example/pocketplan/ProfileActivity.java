@@ -3,12 +3,17 @@ package com.example.pocketplan;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
@@ -44,6 +49,9 @@ public class ProfileActivity extends AppCompatActivity {
     // UI Components - Logout
     private MaterialButton btnLogout;
 
+    // Bottom Navigation
+    private BottomNavigationView bottomNavigation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +59,8 @@ public class ProfileActivity extends AppCompatActivity {
 
         initializeViews();
         setupClickListeners();
-        loadUserData(); // load from SharedPreferences
+        setupBottomNavigation(); // ✅ FIXED: This was missing!
+        loadUserData();
     }
 
     private void initializeViews() {
@@ -77,21 +86,28 @@ public class ProfileActivity extends AppCompatActivity {
         tvSelectedCurrency = findViewById(R.id.tvSelectedCurrency);
 
         btnLogout = findViewById(R.id.btnLogout);
+
+        // ✅ FIXED: Initialize bottom navigation
+        bottomNavigation = findViewById(R.id.bottomNavigation);
     }
 
     private void setupClickListeners() {
         btnEditPhoto.setOnClickListener(v -> Toast.makeText(this, "Opening photo picker...", Toast.LENGTH_SHORT).show());
         btnSaveChanges.setOnClickListener(v -> saveUserChanges());
         btnChangePassword.setOnClickListener(v -> Toast.makeText(this, "Opening Change Password...", Toast.LENGTH_SHORT).show());
+
         switchBiometric.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Toast.makeText(this, isChecked ? "Biometric login enabled" : "Biometric login disabled", Toast.LENGTH_SHORT).show();
         });
+
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Toast.makeText(this, isChecked ? "Notifications enabled" : "Notifications disabled", Toast.LENGTH_SHORT).show();
         });
+
         switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Toast.makeText(this, isChecked ? "Dark mode enabled" : "Dark mode disabled", Toast.LENGTH_SHORT).show();
         });
+
         btnCurrency.setOnClickListener(v -> showCurrencyDialog());
         btnLogout.setOnClickListener(v -> showLogoutDialog());
     }
@@ -116,9 +132,23 @@ public class ProfileActivity extends AppCompatActivity {
         String newEmail = etEmail.getText().toString().trim();
         String newPhone = etPhone.getText().toString().trim();
 
-        if (newName.isEmpty()) { etFullName.setError("Name cannot be empty"); etFullName.requestFocus(); return; }
-        if (newEmail.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) { etEmail.setError("Enter valid email"); etEmail.requestFocus(); return; }
-        if (newPhone.isEmpty()) { etPhone.setError("Phone cannot be empty"); etPhone.requestFocus(); return; }
+        if (newName.isEmpty()) {
+            etFullName.setError("Name cannot be empty");
+            etFullName.requestFocus();
+            return;
+        }
+
+        if (newEmail.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+            etEmail.setError("Enter valid email");
+            etEmail.requestFocus();
+            return;
+        }
+
+        if (newPhone.isEmpty()) {
+            etPhone.setError("Phone cannot be empty");
+            etPhone.requestFocus();
+            return;
+        }
 
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -164,8 +194,40 @@ public class ProfileActivity extends AppCompatActivity {
         builder.show();
     }
 
+    private void setupBottomNavigation() {
+        // ✅ FIXED: Set Profile as selected (not Dashboard)
+        bottomNavigation.setSelectedItemId(R.id.nav_profile);
+
+        bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int itemId = item.getItemId();
+
+                if (itemId == R.id.nav_dashboard) {
+                    // ✅ FIXED: Navigate to Dashboard
+                    Intent intent = new Intent(ProfileActivity.this, DashboardActivity.class);
+                    startActivity(intent);
+                    finish(); // ✅ FIXED: Added finish() to prevent back stack issues
+                    return true;
+                } else if (itemId == R.id.nav_transactions) {
+                    // TODO: Navigate to Transactions activity when created
+                    Intent intent = new Intent(ProfileActivity.this, TransactionsActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return true;
+                } else if (itemId == R.id.nav_profile) {
+                    // Already on profile - do nothing
+                    return true;
+                }
+
+                return false;
+            }
+        });
+    }
+
     @Override
     public void onBackPressed() {
+        // ✅ GOOD: Navigate back to Dashboard
         Intent intent = new Intent(ProfileActivity.this, DashboardActivity.class);
         startActivity(intent);
         finish();
