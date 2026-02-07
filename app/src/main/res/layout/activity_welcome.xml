@@ -9,8 +9,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="0dp">
+        android:orientation="vertical">
 
         <!-- Rounded Gradient Container -->
         <LinearLayout
@@ -20,72 +19,76 @@
             android:background="@drawable/bg_welcome_gradient"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingLeft="24dp"
-            android:paddingTop="32dp"
-            android:paddingRight="24dp"
-            android:paddingBottom="40dp"
-            >
+            android:paddingLeft="@dimen/card_horizontal_padding"
+            android:paddingTop="@dimen/card_top_padding"
+            android:paddingRight="@dimen/card_horizontal_padding"
+            android:paddingBottom="@dimen/card_bottom_padding">
 
             <!-- Wallet Icon -->
             <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="100dp"
-                android:layout_marginBottom="16dp"
+                android:id="@+id/walletIcon"
+                android:layout_width="@dimen/icon_size"
+                android:layout_height="@dimen/icon_size"
+                android:layout_marginTop="@dimen/icon_margin_top"
+                android:layout_marginBottom="@dimen/spacing_medium"
+                android:contentDescription="@string/wallet_icon_desc"
                 android:src="@drawable/ic_wallet" />
 
             <!-- App Name -->
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/appName"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="6dp"
-                android:layout_marginLeft="55dp"
-                android:text="Pocket Plan"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_xsmall"
+                android:text="@string/app_name_display"
                 android:textColor="#FFFFFF"
-                android:textSize="40sp"
+                android:textSize="@dimen/text_app_name"
                 android:textStyle="bold" />
 
             <!-- Tagline -->
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/tagline"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="70dp"
-                android:layout_marginBottom="20dp"
-                android:text="Track   Save   Grow"
+                android:layout_marginBottom="@dimen/spacing_medium"
+                android:text="@string/tagline"
                 android:textColor="#E3EDFF"
-                android:textSize="17sp" />
+                android:textSize="@dimen/text_tagline" />
 
             <!-- Description -->
             <TextView
+                android:id="@+id/description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="50dp"
-                android:layout_marginBottom="40dp"
+                android:layout_marginTop="@dimen/spacing_xlarge"
+                android:layout_marginBottom="@dimen/spacing_xlarge"
                 android:gravity="center"
-                android:text="Track your expenses, manage your budget, and take control of your finances."
+                android:paddingLeft="@dimen/description_horizontal_padding"
+                android:paddingRight="@dimen/description_horizontal_padding"
+                android:text="@string/description"
                 android:textColor="#F2F6FF"
-                android:textSize="18sp" />
+                android:textSize="@dimen/text_description" />
 
             <!-- Welcome -->
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/welcomeText"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Welcome"
+                android:text="@string/welcome"
                 android:textColor="#FFFFFF"
-                android:layout_marginTop="160dp"
-                android:layout_marginLeft="60dp"
-                android:textSize="40sp"
+                android:layout_marginTop="@dimen/welcome_margin_top"
+                android:textSize="@dimen/text_welcome"
                 android:textStyle="bold|italic" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/signInPrompt"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:layout_marginLeft="60dp"
-                android:text="Sign in to continue"
+                android:layout_marginTop="@dimen/spacing_xsmall"
+                android:text="@string/sign_in_prompt"
                 android:textColor="#E3EDFF"
-                android:textSize="20sp" />
+                android:textSize="@dimen/text_subtitle" />
 
         </LinearLayout>
 
@@ -94,12 +97,14 @@
             android:id="@+id/btnSignIn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Sign In"
-            android:textSize="20sp"
+            android:text="@string/sign_in"
+            android:textSize="@dimen/text_button"
             android:textAllCaps="false"
-            android:layout_marginTop="24dp"
-            android:layout_marginLeft="14dp"
-            android:layout_marginRight="14dp"
+            android:layout_marginTop="@dimen/button_margin_top"
+            android:layout_marginStart="@dimen/button_horizontal_margin"
+            android:layout_marginEnd="@dimen/button_horizontal_margin"
+            android:layout_marginBottom="@dimen/button_margin_bottom"
+            android:minHeight="@dimen/button_min_height"
             app:backgroundTint="@null"
             android:background="@drawable/bg_signin_button"
             android:textColor="#000000" />

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="#FFFFFF"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Category Icon Background -->
+        <View
+            android:id="@+id/viewCategoryIconBg"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_category_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Category Icon -->
+        <ImageView
+            android:id="@+id/ivCategoryIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="Category"
+            android:src="@drawable/ic_category_food"
+            app:layout_constraintBottom_toBottomOf="@id/viewCategoryIconBg"
+            app:layout_constraintEnd_toEndOf="@id/viewCategoryIconBg"
+            app:layout_constraintStart_toStartOf="@id/viewCategoryIconBg"
+            app:layout_constraintTop_toTopOf="@id/viewCategoryIconBg"
+            app:tint="#3B82F6" />
+
+        <!-- Transaction Title -->
+        <TextView
+            android:id="@+id/tvTransactionTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Grocery Shopping"
+            android:textColor="#1A1F36"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tvAmount"
+            app:layout_constraintStart_toEndOf="@id/viewCategoryIconBg"
+            app:layout_constraintTop_toTopOf="@id/viewCategoryIconBg" />
+
+        <!-- Category Name -->
+        <TextView
+            android:id="@+id/tvCategoryName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Food &amp; Dining"
+            android:textColor="#7C8DB0"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="@id/tvTransactionTitle"
+            app:layout_constraintStart_toStartOf="@id/tvTransactionTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvTransactionTitle" />
+
+        <!-- Date and Time -->
+        <TextView
+            android:id="@+id/tvDateTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:drawablePadding="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Today, 2:30 PM"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            app:drawableStartCompat="@drawable/ic_clock"
+            app:drawableTint="#94A3B8"
+            app:layout_constraintEnd_toEndOf="@id/tvCategoryName"
+            app:layout_constraintStart_toStartOf="@id/tvCategoryName"
+            app:layout_constraintTop_toBottomOf="@id/tvCategoryName" />
+
+        <!-- Amount -->
+        <TextView
+            android:id="@+id/tvAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="- ₹2,450"
+            android:textColor="#EF4444"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/viewCategoryIconBg" />
+
+        <!-- Transaction Type Indicator -->
+        <View
+            android:id="@+id/viewTypeIndicator"
+            android:layout_width="3dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/bg_expense_indicator"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

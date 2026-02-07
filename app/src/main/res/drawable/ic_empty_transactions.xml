@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Receipt outline -->
+    <path
+        android:fillColor="#E5E7EB"
+        android:pathData="M30,20h60v80l-5,-5 -5,5 -5,-5 -5,5 -5,-5 -5,5 -5,-5 -5,5 -5,-5 -5,5 -5,-5 -5,5V20z"/>
+    
+    <!-- Lines on receipt -->
+    <path
+        android:fillColor="#D1D5DB"
+        android:pathData="M40,35h40v3H40z"/>
+    <path
+        android:fillColor="#D1D5DB"
+        android:pathData="M40,45h30v3H40z"/>
+    <path
+        android:fillColor="#D1D5DB"
+        android:pathData="M40,55h35v3H40z"/>
+    <path
+        android:fillColor="#D1D5DB"
+        android:pathData="M40,65h25v3H40z"/>
+</vector>

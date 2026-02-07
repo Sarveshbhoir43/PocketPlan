@@ -1,3 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PocketPlan</string>
+    <!-- App strings -->
+    <string name="app_name_display">Pocket Plan</string>
+    <string name="tagline">Track   Save   Grow</string>
+    <string name="description">Track your expenses, manage your budget, and take control of your finances.</string>
+    <string name="welcome">Welcome</string>
+    <string name="sign_in_prompt">Sign in to continue</string>
+    <string name="sign_in">Sign In</string>
+
+    <!-- Content descriptions -->
+    <string name="wallet_icon_desc">Wallet icon</string>
 </resources>

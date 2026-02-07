@@ -140,7 +140,8 @@ public class DashboardActivity extends AppCompatActivity {
                     // Already on dashboard
                     return true;
                 } else if (itemId == R.id.nav_transactions) {
-                    Toast.makeText(DashboardActivity.this, "Transactions", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(DashboardActivity.this, TransactionsActivity.class);
+                    startActivity(intent);
                     return true;
                 } else if (itemId == R.id.nav_profile) {
                     Intent intent = new Intent(DashboardActivity.this, ProfileActivity.class);
