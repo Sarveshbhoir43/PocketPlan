@@ -27,6 +27,12 @@
         <activity android:name=".DashboardActivity" />
         <activity android:name=".TransactionsActivity" />
         <activity android:name=".ProfileActivity" />
+        <activity
+            android:name=".AddTransactionActivity"
+            android:theme="@style/Theme.MaterialComponents.Light.Dialog" />
+        <activity android:name=".SalaryActivity" />
+
+
 
     </application>
 

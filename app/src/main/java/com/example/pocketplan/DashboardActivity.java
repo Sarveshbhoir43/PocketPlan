@@ -34,128 +34,133 @@ public class DashboardActivity extends AppCompatActivity {
     // Bottom Navigation
     private BottomNavigationView bottomNavigation;
 
+    // Database
+    private DatabaseHelper databaseHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
-        // ------------------------
         // Check if user is registered
-        // ------------------------
         SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         if (!prefs.contains("name")) {
-            // User not registered → go to registration
-            Intent intent = new Intent(DashboardActivity.this, RegisterActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, RegisterActivity.class));
             finish();
             return;
         }
 
         setContentView(R.layout.activity_dashboard);
 
-        // Initialize views
-        initializeViews();
+        databaseHelper = new DatabaseHelper(this);
 
-        // Set up greeting based on time
+        initializeViews();
         setupGreeting();
 
-        // Load user name from SharedPreferences
         tvUserName.setText(prefs.getString("name", "User"));
 
-        // Set up click listeners
         setupClickListeners();
-
-        // Set up bottom navigation
         setupBottomNavigation();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        double salary = databaseHelper.getSalary();
+
+        if (salary <= 0) {
+            startActivity(new Intent(this, SalaryActivity.class));
+        } else {
+            loadBalance();
+        }
+    }
+
     private void initializeViews() {
-        // Header views
         tvGreeting = findViewById(R.id.tvGreeting);
         tvUserName = findViewById(R.id.tvUserName);
-
-        // Balance card views
         tvTotalBalance = findViewById(R.id.tvTotalBalance);
         tvIncome = findViewById(R.id.tvIncome);
         tvExpense = findViewById(R.id.tvExpense);
 
-        // Feature cards
         cardAddExpense = findViewById(R.id.cardAddExpense);
         cardTransactions = findViewById(R.id.cardTransactions);
         cardBudget = findViewById(R.id.cardBudget);
         cardReports = findViewById(R.id.cardReports);
 
-        // Bottom navigation
         bottomNavigation = findViewById(R.id.bottomNavigation);
     }
 
     private void setupGreeting() {
-        Calendar calendar = Calendar.getInstance();
-        int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
         String greeting;
-        if (hourOfDay >= 0 && hourOfDay < 12) {
-            greeting = "Good Morning,";
-        } else if (hourOfDay >= 12 && hourOfDay < 17) {
-            greeting = "Good Afternoon,";
-        } else {
-            greeting = "Good Evening,";
-        }
+        if (hour < 12) greeting = "Good Morning,";
+        else if (hour < 17) greeting = "Good Afternoon,";
+        else greeting = "Good Evening,";
 
         tvGreeting.setText(greeting);
     }
 
     private void setupClickListeners() {
-        // Add Expense Card
-        cardAddExpense.setOnClickListener(v -> {
-            Toast.makeText(this, "Opening Add Expense...", Toast.LENGTH_SHORT).show();
-        });
 
-        // Transactions Card
-        cardTransactions.setOnClickListener(v -> {
-            Toast.makeText(this, "Opening Transactions...", Toast.LENGTH_SHORT).show();
-        });
+        cardAddExpense.setOnClickListener(v ->
+                startActivity(new Intent(this, AddTransactionActivity.class)));
 
-        // Budget Planner Card
-        cardBudget.setOnClickListener(v -> {
-            Toast.makeText(this, "Opening Budget Planner...", Toast.LENGTH_SHORT).show();
-        });
+        cardTransactions.setOnClickListener(v ->
+                startActivity(new Intent(this, TransactionsActivity.class)));
 
-        // Reports Card
-        cardReports.setOnClickListener(v -> {
-            Toast.makeText(this, "Opening Reports...", Toast.LENGTH_SHORT).show();
-        });
+        cardBudget.setOnClickListener(v ->
+                startActivity(new Intent(this, SalaryActivity.class)));
+
+        cardReports.setOnClickListener(v ->
+                Toast.makeText(this, "Reports coming soon", Toast.LENGTH_SHORT).show());
     }
 
     private void setupBottomNavigation() {
-        // Set Dashboard as selected
+
         bottomNavigation.setSelectedItemId(R.id.nav_dashboard);
 
-        bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int itemId = item.getItemId();
+        bottomNavigation.setOnNavigationItemSelectedListener(item -> {
 
-                if (itemId == R.id.nav_dashboard) {
-                    // Already on dashboard
-                    return true;
-                } else if (itemId == R.id.nav_transactions) {
-                    Intent intent = new Intent(DashboardActivity.this, TransactionsActivity.class);
-                    startActivity(intent);
-                    return true;
-                } else if (itemId == R.id.nav_profile) {
-                    Intent intent = new Intent(DashboardActivity.this, ProfileActivity.class);
-                    startActivity(intent);
-                    return true;
-                }
+            if (item.getItemId() == R.id.nav_dashboard) return true;
 
-                return false;
+            if (item.getItemId() == R.id.nav_transactions) {
+                startActivity(new Intent(this, TransactionsActivity.class));
+                return true;
             }
+
+            if (item.getItemId() == R.id.nav_profile) {
+                startActivity(new Intent(this, ProfileActivity.class));
+                return true;
+            }
+
+            return false;
         });
     }
 
-    // Method to update balance dynamically (can be called from other parts of the app)
-    public void updateBalance(double totalBalance, double income, double expense) {
+    // =============================
+    // SAFE BALANCE LOADING (NO CRASH)
+    // =============================
+    private void loadBalance() {
+
+        double salary = databaseHelper.getSalary();
+
+        double income = 0;
+        double expense = 0;
+
+        try {
+            income = databaseHelper.getTotalIncome();
+            expense = databaseHelper.getTotalExpense();
+        } catch (Exception e) {
+            // Prevent crash if methods not yet implemented
+        }
+
+        double totalBalance = salary + income - expense;
+        updateBalance(totalBalance, income, expense);
+    }
+
+    private void updateBalance(double totalBalance, double income, double expense) {
         tvTotalBalance.setText(String.format(Locale.getDefault(), "₹%.2f", totalBalance));
         tvIncome.setText(String.format(Locale.getDefault(), "₹%.2f", income));
         tvExpense.setText(String.format(Locale.getDefault(), "₹%.2f", expense));
@@ -163,7 +168,6 @@ public class DashboardActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // Exit app from dashboard
         finishAffinity();
     }
 }
