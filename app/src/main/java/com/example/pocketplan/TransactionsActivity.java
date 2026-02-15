@@ -2,6 +2,7 @@ package com.example.pocketplan;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -26,6 +27,8 @@ import java.util.Locale;
 
 public class TransactionsActivity extends AppCompatActivity
         implements TransactionAdapter.OnTransactionClickListener {
+
+    private static final String TAG = "TransactionsActivity";
 
     // UI Components
     private TextView tvTransactionCount;
@@ -65,6 +68,13 @@ public class TransactionsActivity extends AppCompatActivity
         setupBottomNavigation();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume called - reloading transactions");
+        loadTransactions();
+    }
+
     private void initializeViews() {
         tvTransactionCount = findViewById(R.id.tvTransactionCount);
         tvTotalBalance = findViewById(R.id.tvTotalBalance);
@@ -88,12 +98,31 @@ public class TransactionsActivity extends AppCompatActivity
         rvTransactions.setAdapter(adapter);
     }
 
-    // ✅ Load transactions
+    // ✅ Load transactions with debugging
     private void loadTransactions() {
-        transactions.clear();
-        transactions.addAll(databaseHelper.getAllTransactions());
-        adapter.updateTransactions(transactions);
-        updateUI();
+        try {
+            transactions.clear();
+            List<Transaction> dbTransactions = databaseHelper.getAllTransactions();
+
+            Log.d(TAG, "Loaded " + dbTransactions.size() + " transactions from database");
+
+            transactions.addAll(dbTransactions);
+            adapter.updateTransactions(transactions);
+            updateUI();
+
+            // Debug: Print first transaction if exists
+            if (!transactions.isEmpty()) {
+                Transaction first = transactions.get(0);
+                Log.d(TAG, "First transaction: " + first.getTitle() +
+                        ", Category: " + first.getCategory() +
+                        ", Amount: " + first.getAmount() +
+                        ", Type: " + first.getType());
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading transactions: " + e.getMessage(), e);
+            Toast.makeText(this, "Error loading transactions", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupClickListeners() {
@@ -168,25 +197,36 @@ public class TransactionsActivity extends AppCompatActivity
 
     // ✅ FIXED BALANCE LOGIC (MATCHES DASHBOARD)
     private void updateUI() {
+        try {
+            double totalIncome = databaseHelper.getTotalIncome();
+            double totalExpense = databaseHelper.getTotalExpense();
+            double salary = databaseHelper.getSalary();
 
-        double totalIncome = databaseHelper.getTotalIncome();
-        double totalExpense = databaseHelper.getTotalExpense();
-        double salary = databaseHelper.getSalary();
+            double balance = salary + totalIncome - totalExpense;
 
-        double balance = salary + totalIncome - totalExpense;
+            Log.d(TAG, "Balance calculation - Salary: " + salary +
+                    ", Income: " + totalIncome +
+                    ", Expense: " + totalExpense +
+                    ", Total Balance: " + balance);
 
-        tvTotalBalance.setText(String.format(Locale.getDefault(), "₹%.2f", balance));
-        tvTotalIncome.setText(String.format(Locale.getDefault(), "₹%.2f", totalIncome));
-        tvTotalExpense.setText(String.format(Locale.getDefault(), "₹%.2f", totalExpense));
+            tvTotalBalance.setText(String.format(Locale.getDefault(), "₹%.2f", balance));
+            tvTotalIncome.setText(String.format(Locale.getDefault(), "₹%.2f", totalIncome));
+            tvTotalExpense.setText(String.format(Locale.getDefault(), "₹%.2f", totalExpense));
 
-        updateTransactionCount();
+            updateTransactionCount();
 
-        if (transactions.isEmpty()) {
-            emptyStateLayout.setVisibility(View.VISIBLE);
-            rvTransactions.setVisibility(View.GONE);
-        } else {
-            emptyStateLayout.setVisibility(View.GONE);
-            rvTransactions.setVisibility(View.VISIBLE);
+            if (transactions.isEmpty()) {
+                emptyStateLayout.setVisibility(View.VISIBLE);
+                rvTransactions.setVisibility(View.GONE);
+                Log.d(TAG, "No transactions to display - showing empty state");
+            } else {
+                emptyStateLayout.setVisibility(View.GONE);
+                rvTransactions.setVisibility(View.VISIBLE);
+                Log.d(TAG, "Displaying " + transactions.size() + " transactions");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating UI: " + e.getMessage(), e);
         }
     }
 
@@ -207,13 +247,45 @@ public class TransactionsActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == ADD_TRANSACTION_REQUEST && resultCode == RESULT_OK) {
+            Log.d(TAG, "Transaction added successfully - reloading");
             loadTransactions();
         }
     }
 
     @Override
     public void onTransactionClick(Transaction transaction) {
-        Toast.makeText(this, transaction.getTitle(), Toast.LENGTH_SHORT).show();
+        // Show transaction details in a dialog
+        new AlertDialog.Builder(this)
+                .setTitle(transaction.getTitle())
+                .setMessage(
+                        "Category: " + transaction.getCategory() + "\n" +
+                                "Amount: ₹" + String.format(Locale.getDefault(), "%.2f", transaction.getAmount()) + "\n" +
+                                "Type: " + transaction.getType() + "\n" +
+                                (transaction.getNote() != null && !transaction.getNote().isEmpty() ?
+                                        "Note: " + transaction.getNote() : "")
+                )
+                .setPositiveButton("OK", null)
+                .setNegativeButton("Delete", (dialog, which) -> {
+                    deleteTransaction(transaction);
+                })
+                .show();
+    }
+
+    private void deleteTransaction(Transaction transaction) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Transaction")
+                .setMessage("Are you sure you want to delete this transaction?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    boolean deleted = databaseHelper.deleteTransaction(transaction.getId());
+                    if (deleted) {
+                        Toast.makeText(this, "Transaction deleted", Toast.LENGTH_SHORT).show();
+                        loadTransactions();
+                    } else {
+                        Toast.makeText(this, "Failed to delete transaction", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void setupBottomNavigation() {

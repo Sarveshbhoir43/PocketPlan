@@ -1,5 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Primary App Colors -->
+    <color name="colorPrimary">#4CAF50</color>
+    <color name="colorPrimaryDark">#388E3C</color>
+    <color name="colorAccent">#FF9800</color>
+
+    <!-- Transaction Type Colors -->
+    <color name="income_green">#4CAF50</color>
+    <color name="expense_red">#F44336</color>
+
+    <!-- Category Colors (Light backgrounds for cards) -->
+    <color name="category_food">#FFF3E0</color>           <!-- Light Orange -->
+    <color name="category_transport">#E3F2FD</color>       <!-- Light Blue -->
+    <color name="category_shopping">#FCE4EC</color>        <!-- Light Pink -->
+    <color name="category_entertainment">#F3E5F5</color>   <!-- Light Purple -->
+    <color name="category_bills">#FFEBEE</color>           <!-- Light Red -->
+    <color name="category_health">#E8F5E9</color>          <!-- Light Green -->
+    <color name="category_education">#E8EAF6</color>       <!-- Light Indigo -->
+    <color name="category_travel">#E0F7FA</color>          <!-- Light Cyan -->
+    <color name="category_groceries">#F1F8E9</color>       <!-- Light Lime -->
+    <color name="category_default">#ECEFF1</color>         <!-- Light Blue Grey -->
+
+    <!-- Category Icon Colors (Darker versions) -->
+    <color name="icon_food">#FF9800</color>                <!-- Orange -->
+    <color name="icon_transport">#2196F3</color>           <!-- Blue -->
+    <color name="icon_shopping">#E91E63</color>            <!-- Pink -->
+    <color name="icon_entertainment">#9C27B0</color>       <!-- Purple -->
+    <color name="icon_bills">#F44336</color>               <!-- Red -->
+    <color name="icon_health">#4CAF50</color>              <!-- Green -->
+    <color name="icon_education">#3F51B5</color>           <!-- Indigo -->
+    <color name="icon_travel">#00BCD4</color>              <!-- Cyan -->
+    <color name="icon_groceries">#8BC34A</color>           <!-- Light Green -->
+    <color name="icon_default">#607D8B</color>             <!-- Blue Grey -->
+
+    <!-- Background Colors -->
+    <color name="background_light">#F5F7FA</color>
+    <color name="card_background">#FFFFFF</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_hint">#999999</color>
+
+    <!-- Other UI Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="divider">#E0E0E0</color>
 </resources>
