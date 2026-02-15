@@ -29,10 +29,7 @@
         <activity android:name=".ProfileActivity" />
         <activity
             android:name=".AddTransactionActivity"
-            android:theme="@style/Theme.MaterialComponents.Light.Dialog" />
-        <activity android:name=".SalaryActivity" />
-
-
+            android:exported="false" />
 
     </application>
 

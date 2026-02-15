@@ -24,35 +24,59 @@
             android:orientation="vertical"
             android:paddingBottom="16dp">
 
-            <!-- Header -->
-            <LinearLayout
+            <!-- Top Gradient Header -->
+            <RelativeLayout
+                android:id="@+id/headerSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_transactions_header"
-                android:orientation="vertical"
+                android:background="@drawable/bg_dashboard_header"
                 android:paddingStart="20dp"
                 android:paddingTop="40dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="24dp">
+                android:paddingBottom="28dp">
 
-                <TextView
+                <!-- Greeting -->
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Transactions"
-                    android:textColor="#FFFFFF"
-                    android:textSize="28sp"
-                    android:textStyle="bold" />
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvTransactionCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    <TextView
+                        android:id="@+id/tvUserName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Transactions"
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Profile Image -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/imgProfile"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
                     android:layout_marginTop="4dp"
-                    android:text="24 transactions this month"
-                    android:textColor="#E3EDFF"
-                    android:textSize="14sp" />
+                    android:src="@drawable/ic_profile"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:shapeAppearanceOverlay="@style/CircleImageStyle"
+                    android:contentDescription="Profile" />
 
-            </LinearLayout>
+            </RelativeLayout>
+
+            <!-- Transaction Count -->
+            <TextView
+                android:id="@+id/tvTransactionCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="16dp"
+                android:text="24 transactions this month"
+                android:textColor="#64748B"
+                android:textSize="14sp" />
 
             <!-- Balance Summary Card -->
             <com.google.android.material.card.MaterialCardView
@@ -60,9 +84,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="-30dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginEnd="20dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="#0E113E"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
@@ -76,7 +100,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total Balance"
-                        android:textColor="#7C8DB0"
+                        android:textColor="#A4BBF0"
                         android:textSize="13sp" />
 
                     <TextView
@@ -85,7 +109,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="₹25,430.00"
-                        android:textColor="#1A1F36"
+                        android:textColor="#f5f9f7"
                         android:textSize="32sp"
                         android:textStyle="bold" />
 
@@ -119,7 +143,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="8dp"
                                     android:text="Income"
-                                    android:textColor="#7C8DB0"
+                                    android:textColor="#ACC4FF"
                                     android:textSize="13sp" />
 
                             </LinearLayout>
@@ -159,7 +183,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="8dp"
                                     android:text="Expense"
-                                    android:textColor="#7C8DB0"
+                                    android:textColor="#B4C9FF"
                                     android:textSize="13sp" />
 
                             </LinearLayout>
@@ -251,16 +275,15 @@
 
             </LinearLayout>
 
-            <!-- Transactions List -->
+            <!-- Transactions List - FIXED: Removed nestedScrollingEnabled -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvTransactions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="30dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="20dp"
                 android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
                 tools:itemCount="5"
                 tools:listitem="@layout/item_transaction" />
 

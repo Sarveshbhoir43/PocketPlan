@@ -3,20 +3,23 @@ package com.example.pocketplan;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.MenuItem;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Calendar;
 import java.util.Locale;
 
 public class DashboardActivity extends AppCompatActivity {
+
+    private static final String TAG = "DashboardActivity";
 
     // UI Components
     private TextView tvGreeting;
@@ -39,7 +42,6 @@ public class DashboardActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
 
         // Check if user is registered
@@ -66,14 +68,8 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        double salary = databaseHelper.getSalary();
-
-        if (salary <= 0) {
-            startActivity(new Intent(this, SalaryActivity.class));
-        } else {
-            loadBalance();
-        }
+        Log.d(TAG, "onResume called - loading balance");
+        loadBalance();
     }
 
     private void initializeViews() {
@@ -110,8 +106,8 @@ public class DashboardActivity extends AppCompatActivity {
         cardTransactions.setOnClickListener(v ->
                 startActivity(new Intent(this, TransactionsActivity.class)));
 
-        cardBudget.setOnClickListener(v ->
-                startActivity(new Intent(this, SalaryActivity.class)));
+        // Budget card now opens salary dialog
+        cardBudget.setOnClickListener(v -> showSalaryDialog());
 
         cardReports.setOnClickListener(v ->
                 Toast.makeText(this, "Reports coming soon", Toast.LENGTH_SHORT).show());
@@ -139,25 +135,23 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    // =============================
-    // SAFE BALANCE LOADING (NO CRASH)
-    // =============================
     private void loadBalance() {
-
-        double salary = databaseHelper.getSalary();
-
-        double income = 0;
-        double expense = 0;
-
         try {
-            income = databaseHelper.getTotalIncome();
-            expense = databaseHelper.getTotalExpense();
-        } catch (Exception e) {
-            // Prevent crash if methods not yet implemented
-        }
+            double salary = databaseHelper.getSalary();
+            double income = databaseHelper.getTotalIncome();
+            double expense = databaseHelper.getTotalExpense();
 
-        double totalBalance = salary + income - expense;
-        updateBalance(totalBalance, income, expense);
+            double totalBalance = salary + income - expense;
+
+            Log.d(TAG, "Balance - Salary: " + salary + ", Income: " + income +
+                    ", Expense: " + expense + ", Total: " + totalBalance);
+
+            updateBalance(totalBalance, income, expense);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading balance: " + e.getMessage(), e);
+            updateBalance(0, 0, 0);
+        }
     }
 
     private void updateBalance(double totalBalance, double income, double expense) {
@@ -166,8 +160,73 @@ public class DashboardActivity extends AppCompatActivity {
         tvExpense.setText(String.format(Locale.getDefault(), "₹%.2f", expense));
     }
 
+    private void showSalaryDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Set Monthly Salary");
+
+        // Inflate custom layout
+        final TextInputEditText input = new TextInputEditText(this);
+        input.setHint("Enter your monthly salary");
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+        // Set current salary
+        double currentSalary = databaseHelper.getSalary();
+        if (currentSalary > 0) {
+            input.setText(String.valueOf(currentSalary));
+        }
+
+        android.widget.FrameLayout container = new android.widget.FrameLayout(this);
+        android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        params.leftMargin = 50;
+        params.rightMargin = 50;
+        input.setLayoutParams(params);
+        container.addView(input);
+
+        builder.setView(container);
+
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String salaryStr = input.getText().toString().trim();
+
+            if (salaryStr.isEmpty()) {
+                Toast.makeText(this, "Please enter salary", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                double salary = Double.parseDouble(salaryStr);
+
+                if (salary < 0) {
+                    Toast.makeText(this, "Salary cannot be negative", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                boolean success = databaseHelper.setSalary(salary);
+
+                if (success) {
+                    Toast.makeText(this, "Salary updated successfully", Toast.LENGTH_SHORT).show();
+                    loadBalance(); // Refresh dashboard
+                } else {
+                    Toast.makeText(this, "Failed to update salary", Toast.LENGTH_SHORT).show();
+                }
+
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Invalid salary amount", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
     @Override
     public void onBackPressed() {
-        finishAffinity();
+        if (bottomNavigation.getSelectedItemId() != R.id.nav_dashboard) {
+            bottomNavigation.setSelectedItemId(R.id.nav_dashboard);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

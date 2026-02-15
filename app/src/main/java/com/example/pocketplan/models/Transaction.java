@@ -1,66 +1,89 @@
 package com.example.pocketplan.models;
 
-import java.io.Serializable;
+import com.example.pocketplan.R;
 
-public class Transaction implements Serializable {
-    
-    private String id;
+public class Transaction {
+    private int id;
     private String title;
     private String category;
     private double amount;
+    private String note;
     private String type; // "INCOME" or "EXPENSE"
     private long timestamp;
-    private String note;
-    private int categoryIconRes;
-    private int categoryColorRes;
 
-    public Transaction() {
-        // Default constructor
-    }
-
-    public Transaction(String id, String title, String category, double amount, 
-                      String type, long timestamp, String note, 
-                      int categoryIconRes, int categoryColorRes) {
+    public Transaction(int id, String title, String category, double amount,
+                       String note, String type, long timestamp) {
         this.id = id;
         this.title = title;
         this.category = category;
         this.amount = amount;
+        this.note = note;
         this.type = type;
         this.timestamp = timestamp;
-        this.note = note;
-        this.categoryIconRes = categoryIconRes;
-        this.categoryColorRes = categoryColorRes;
     }
 
     // Getters
-    public String getId() { return id; }
+    public int getId() { return id; }
     public String getTitle() { return title; }
     public String getCategory() { return category; }
     public double getAmount() { return amount; }
+    public String getNote() { return note; }
     public String getType() { return type; }
     public long getTimestamp() { return timestamp; }
-    public String getNote() { return note; }
-    public int getCategoryIconRes() { return categoryIconRes; }
-    public int getCategoryColorRes() { return categoryColorRes; }
 
-    // Setters
-    public void setId(String id) { this.id = id; }
-    public void setTitle(String title) { this.title = title; }
-    public void setCategory(String category) { this.category = category; }
-    public void setAmount(double amount) { this.amount = amount; }
-    public void setType(String type) { this.type = type; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-    public void setNote(String note) { this.note = note; }
-    public void setCategoryIconRes(int categoryIconRes) { this.categoryIconRes = categoryIconRes; }
-    public void setCategoryColorRes(int categoryColorRes) { this.categoryColorRes = categoryColorRes; }
-
-    // Helper method to check if transaction is income
     public boolean isIncome() {
         return "INCOME".equalsIgnoreCase(type);
     }
 
-    // Helper method to check if transaction is expense
-    public boolean isExpense() {
-        return "EXPENSE".equalsIgnoreCase(type);
+    // Category icon resource
+    public int getCategoryIconRes() {
+        switch (category) {
+            case "Food & Dining":
+                return android.R.drawable.ic_menu_recent_history;
+            case "Transportation":
+                return android.R.drawable.ic_menu_directions;
+            case "Shopping":
+                return android.R.drawable.ic_menu_gallery;
+            case "Entertainment":
+                return android.R.drawable.ic_media_play;
+            case "Bills & Utilities":
+                return android.R.drawable.ic_menu_agenda;
+            case "Healthcare":
+                return android.R.drawable.ic_menu_add;
+            case "Education":
+                return android.R.drawable.ic_menu_info_details;
+            case "Travel":
+                return android.R.drawable.ic_menu_compass;
+            case "Groceries":
+                return android.R.drawable.ic_menu_today;
+            default:
+                return android.R.drawable.ic_dialog_info;
+        }
+    }
+
+    // Category color resource
+    public int getCategoryColorRes() {
+        switch (category) {
+            case "Food & Dining":
+                return R.color.category_food;
+            case "Transportation":
+                return R.color.category_transport;
+            case "Shopping":
+                return R.color.category_shopping;
+            case "Entertainment":
+                return R.color.category_entertainment;
+            case "Bills & Utilities":
+                return R.color.category_bills;
+            case "Healthcare":
+                return R.color.category_health;
+            case "Education":
+                return R.color.category_education;
+            case "Travel":
+                return R.color.category_travel;
+            case "Groceries":
+                return R.color.category_groceries;
+            default:
+                return R.color.category_default;
+        }
     }
 }

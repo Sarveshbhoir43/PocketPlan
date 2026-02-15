@@ -2,6 +2,7 @@ package com.example.pocketplan.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
+
+    private static final String TAG = "TransactionAdapter";
 
     private Context context;
     private List<Transaction> transactions;
@@ -95,6 +98,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         this.transactions = newTransactions;
         this.transactionsFiltered = new ArrayList<>(newTransactions);
         notifyDataSetChanged();
+        Log.d(TAG, "Updated transactions: " + newTransactions.size() + " items");
     }
 
     class TransactionViewHolder extends RecyclerView.ViewHolder {
@@ -127,32 +131,58 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         }
 
         public void bind(Transaction transaction) {
-            // Set title and category
-            tvTransactionTitle.setText(transaction.getTitle());
-            tvCategoryName.setText(transaction.getCategory());
+            try {
+                // Set title and category
+                tvTransactionTitle.setText(transaction.getTitle());
+                tvCategoryName.setText(transaction.getCategory());
 
-            // Set category icon
-            ivCategoryIcon.setImageResource(transaction.getCategoryIconRes());
+                // Set category icon with fallback
+                int iconRes = transaction.getCategoryIconRes();
+                if (iconRes == 0) {
+                    iconRes = android.R.drawable.ic_dialog_info;
+                }
+                ivCategoryIcon.setImageResource(iconRes);
 
-            // Set category icon background color
-            GradientDrawable iconBgDrawable = (GradientDrawable) viewCategoryIconBg.getBackground();
-            iconBgDrawable.setColor(ContextCompat.getColor(context, transaction.getCategoryColorRes()));
+                // Set category icon background color with fallback
+                int colorRes = transaction.getCategoryColorRes();
+                if (colorRes == 0) {
+                    colorRes = R.color.category_default;
+                }
 
-            // Set icon tint
-            ivCategoryIcon.setColorFilter(ContextCompat.getColor(context, getCategoryIconColor(transaction)));
+                try {
+                    GradientDrawable iconBgDrawable = (GradientDrawable) viewCategoryIconBg.getBackground();
+                    iconBgDrawable.setColor(ContextCompat.getColor(context, colorRes));
+                } catch (Exception e) {
+                    Log.e(TAG, "Error setting background color: " + e.getMessage());
+                }
 
-            // Set date and time
-            tvDateTime.setText(formatDateTime(transaction.getTimestamp()));
+                // Set icon tint
+                int iconTintColor = getCategoryIconColor(transaction);
+                ivCategoryIcon.setColorFilter(ContextCompat.getColor(context, iconTintColor));
 
-            // Set amount with sign and color
-            boolean isIncome = transaction.isIncome();
-            String amountText = (isIncome ? "+ " : "- ") + "₹" + String.format(Locale.getDefault(), "%.2f", transaction.getAmount());
-            tvAmount.setText(amountText);
-            tvAmount.setTextColor(ContextCompat.getColor(context, isIncome ? R.color.income_green : R.color.expense_red));
+                // Set date and time
+                tvDateTime.setText(formatDateTime(transaction.getTimestamp()));
 
-            // Set type indicator color
-            GradientDrawable indicatorDrawable = (GradientDrawable) viewTypeIndicator.getBackground();
-            indicatorDrawable.setColor(ContextCompat.getColor(context, isIncome ? R.color.income_green : R.color.expense_red));
+                // Set amount with sign and color
+                boolean isIncome = transaction.isIncome();
+                String amountText = (isIncome ? "+ " : "- ") + "₹" +
+                        String.format(Locale.getDefault(), "%.2f", transaction.getAmount());
+                tvAmount.setText(amountText);
+                tvAmount.setTextColor(ContextCompat.getColor(context,
+                        isIncome ? R.color.income_green : R.color.expense_red));
+
+                // Set type indicator color
+                try {
+                    GradientDrawable indicatorDrawable = (GradientDrawable) viewTypeIndicator.getBackground();
+                    indicatorDrawable.setColor(ContextCompat.getColor(context,
+                            isIncome ? R.color.income_green : R.color.expense_red));
+                } catch (Exception e) {
+                    Log.e(TAG, "Error setting indicator color: " + e.getMessage());
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error binding transaction: " + e.getMessage(), e);
+            }
         }
 
         private int getCategoryIconColor(Transaction transaction) {
@@ -160,46 +190,58 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             if (transaction.isIncome()) {
                 return R.color.income_green;
             }
-            
-            // You can customize this based on category
-            switch (transaction.getCategory().toLowerCase()) {
-                case "food & dining":
-                    return R.color.category_food;
-                case "transport":
-                    return R.color.category_transport;
-                case "shopping":
-                    return R.color.category_shopping;
-                case "bills":
-                    return R.color.category_bills;
-                case "entertainment":
-                    return R.color.category_entertainment;
-                case "health":
-                    return R.color.category_health;
-                default:
-                    return R.color.category_default;
+
+            // Match category names exactly as they appear in AddTransactionActivity
+            String category = transaction.getCategory();
+
+            if (category.equalsIgnoreCase("Food & Dining")) {
+                return R.color.icon_food;
+            } else if (category.equalsIgnoreCase("Transportation")) {
+                return R.color.icon_transport;
+            } else if (category.equalsIgnoreCase("Shopping")) {
+                return R.color.icon_shopping;
+            } else if (category.equalsIgnoreCase("Entertainment")) {
+                return R.color.icon_entertainment;
+            } else if (category.equalsIgnoreCase("Bills & Utilities")) {
+                return R.color.icon_bills;
+            } else if (category.equalsIgnoreCase("Healthcare")) {
+                return R.color.icon_health;
+            } else if (category.equalsIgnoreCase("Education")) {
+                return R.color.icon_education;
+            } else if (category.equalsIgnoreCase("Travel")) {
+                return R.color.icon_travel;
+            } else if (category.equalsIgnoreCase("Groceries")) {
+                return R.color.icon_groceries;
+            } else {
+                return R.color.icon_default;
             }
         }
 
         private String formatDateTime(long timestamp) {
-            Date date = new Date(timestamp);
-            Date now = new Date();
-            
-            long diffInMillis = now.getTime() - date.getTime();
-            long diffInHours = diffInMillis / (1000 * 60 * 60);
-            long diffInDays = diffInMillis / (1000 * 60 * 60 * 24);
+            try {
+                Date date = new Date(timestamp);
+                Date now = new Date();
 
-            SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a", Locale.getDefault());
-            
-            if (diffInHours < 24 && now.getDate() == date.getDate()) {
-                return "Today, " + timeFormat.format(date);
-            } else if (diffInDays == 1) {
-                return "Yesterday, " + timeFormat.format(date);
-            } else if (diffInDays < 7) {
-                SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE, h:mm a", Locale.getDefault());
-                return dayFormat.format(date);
-            } else {
-                SimpleDateFormat fullFormat = new SimpleDateFormat("MMM dd, h:mm a", Locale.getDefault());
-                return fullFormat.format(date);
+                long diffInMillis = now.getTime() - date.getTime();
+                long diffInHours = diffInMillis / (1000 * 60 * 60);
+                long diffInDays = diffInMillis / (1000 * 60 * 60 * 24);
+
+                SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a", Locale.getDefault());
+
+                if (diffInHours < 24 && now.getDate() == date.getDate()) {
+                    return "Today, " + timeFormat.format(date);
+                } else if (diffInDays == 1) {
+                    return "Yesterday, " + timeFormat.format(date);
+                } else if (diffInDays < 7) {
+                    SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE, h:mm a", Locale.getDefault());
+                    return dayFormat.format(date);
+                } else {
+                    SimpleDateFormat fullFormat = new SimpleDateFormat("MMM dd, h:mm a", Locale.getDefault());
+                    return fullFormat.format(date);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error formatting date: " + e.getMessage());
+                return "Unknown";
             }
         }
     }
