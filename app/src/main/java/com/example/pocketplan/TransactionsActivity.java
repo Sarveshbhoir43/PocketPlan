@@ -1,9 +1,14 @@
 package com.example.pocketplan;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +40,7 @@ public class TransactionsActivity extends AppCompatActivity
     private TextView tvTotalBalance;
     private TextView tvTotalIncome;
     private TextView tvTotalExpense;
+    private ImageView imgProfile;  // ADDED
     private ChipGroup chipGroupFilter;
     private Chip chipAll, chipIncome, chipExpense;
     private MaterialButton btnSort;
@@ -54,18 +60,25 @@ public class TransactionsActivity extends AppCompatActivity
     // Database Helper
     private DatabaseHelper databaseHelper;
 
+    // SharedPreferences
+    private SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transactions);
 
         databaseHelper = new DatabaseHelper(this);
+        prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
 
         initializeViews();
         setupRecyclerView();
         loadTransactions();
         setupClickListeners();
         setupBottomNavigation();
+
+        // Load profile image
+        loadProfileImage();
     }
 
     @Override
@@ -73,6 +86,7 @@ public class TransactionsActivity extends AppCompatActivity
         super.onResume();
         Log.d(TAG, "onResume called - reloading transactions");
         loadTransactions();
+        loadProfileImage(); // Reload profile image when returning
     }
 
     private void initializeViews() {
@@ -80,6 +94,7 @@ public class TransactionsActivity extends AppCompatActivity
         tvTotalBalance = findViewById(R.id.tvTotalBalance);
         tvTotalIncome = findViewById(R.id.tvTotalIncome);
         tvTotalExpense = findViewById(R.id.tvTotalExpense);
+        imgProfile = findViewById(R.id.imgProfile);  // ADDED
         chipGroupFilter = findViewById(R.id.chipGroupFilter);
         chipAll = findViewById(R.id.chipAll);
         chipIncome = findViewById(R.id.chipIncome);
@@ -91,6 +106,26 @@ public class TransactionsActivity extends AppCompatActivity
         bottomNavigation = findViewById(R.id.bottomNavigation);
     }
 
+    // ADDED: Load profile image from SharedPreferences
+    private void loadProfileImage() {
+        try {
+            String imageBase64 = prefs.getString("profile_image", null);
+            if (imageBase64 != null && !imageBase64.isEmpty()) {
+                byte[] decodedBytes = Base64.decode(imageBase64, Base64.DEFAULT);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                imgProfile.setImageBitmap(bitmap);
+                Log.d(TAG, "Profile image loaded successfully");
+            } else {
+                // Set default placeholder
+                imgProfile.setImageResource(R.drawable.ic_profile);
+                Log.d(TAG, "No profile image found, using placeholder");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading profile image: " + e.getMessage(), e);
+            imgProfile.setImageResource(R.drawable.ic_profile);
+        }
+    }
+
     private void setupRecyclerView() {
         transactions = new ArrayList<>();
         adapter = new TransactionAdapter(this, transactions, this);
@@ -98,7 +133,6 @@ public class TransactionsActivity extends AppCompatActivity
         rvTransactions.setAdapter(adapter);
     }
 
-    // ✅ Load transactions with debugging
     private void loadTransactions() {
         try {
             transactions.clear();
@@ -110,7 +144,6 @@ public class TransactionsActivity extends AppCompatActivity
             adapter.updateTransactions(transactions);
             updateUI();
 
-            // Debug: Print first transaction if exists
             if (!transactions.isEmpty()) {
                 Transaction first = transactions.get(0);
                 Log.d(TAG, "First transaction: " + first.getTitle() +
@@ -126,6 +159,12 @@ public class TransactionsActivity extends AppCompatActivity
     }
 
     private void setupClickListeners() {
+
+        // Profile image click - navigate to Profile
+        imgProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            startActivity(intent);
+        });
 
         chipGroupFilter.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.chipAll) {
@@ -195,7 +234,6 @@ public class TransactionsActivity extends AppCompatActivity
         }
     }
 
-    // ✅ FIXED BALANCE LOGIC (MATCHES DASHBOARD)
     private void updateUI() {
         try {
             double totalIncome = databaseHelper.getTotalIncome();
@@ -254,7 +292,6 @@ public class TransactionsActivity extends AppCompatActivity
 
     @Override
     public void onTransactionClick(Transaction transaction) {
-        // Show transaction details in a dialog
         new AlertDialog.Builder(this)
                 .setTitle(transaction.getTitle())
                 .setMessage(

@@ -2,8 +2,13 @@
 <resources>
 
 
+<!--    <style name="CircleImageStyle">-->
+<!--        <item name="shapeAppearanceOverlay">@style/CircleShape</item>-->
+<!--    </style>-->
+
     <style name="CircleImageStyle">
-        <item name="shapeAppearanceOverlay">@style/CircleShape</item>
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
     </style>
 
     <!-- Full circle -->

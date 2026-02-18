@@ -50,15 +50,16 @@
         <!-- Profile Image -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgProfile"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_alignParentEnd="true"
             android:layout_marginTop="4dp"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_profile"
             android:clickable="true"
             android:focusable="true"
-            app:shapeAppearanceOverlay="@style/CircleImageStyle"
-            android:contentDescription="Profile" />
+            android:contentDescription="Profile"
+            app:shapeAppearanceOverlay="@style/CircleImageStyle" />
 
     </RelativeLayout>
 
@@ -290,9 +291,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- View Transactions Card -->
+                <!-- Add Income Card - CHANGED FROM TRANSACTIONS -->
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardTransactions"
+                    android:id="@+id/cardAddIncome"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_rowWeight="1"
@@ -316,13 +317,13 @@
                         <View
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="@drawable/bg_icon_transactions" />
+                            android:background="@drawable/bg_icon_add_income" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:text="Transactions"
+                            android:text="Add Income"
                             android:textColor="#1A1F36"
                             android:textSize="14sp"
                             android:textStyle="bold"
@@ -330,7 +331,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Budget Planner Card -->
+                <!-- Budget/Salary Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardBudget"
                     android:layout_width="0dp"
@@ -361,7 +362,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:text="Budget"
+                            android:text="Set Salary"
                             android:textColor="#1A1F36"
                             android:textSize="14sp"
                             android:textStyle="bold"
@@ -369,7 +370,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Reports Card -->
+                <!-- View All Transactions Card - CHANGED FROM REPORTS -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardReports"
                     android:layout_width="0dp"
@@ -394,13 +395,13 @@
                         <View
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="@drawable/bg_icon_reports" />
+                            android:background="@drawable/bg_icon_transactions" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:text="Reports"
+                            android:text="View All"
                             android:textColor="#1A1F36"
                             android:textSize="14sp"
                             android:textStyle="bold"
@@ -410,11 +411,31 @@
 
             </GridLayout>
 
+            <!-- Clear All Button - NEW -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnClearAll"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="20dp"
+                android:text="Clear All Data"
+                android:textColor="#DC2626"
+                app:cornerRadius="12dp"
+                app:icon="@android:drawable/ic_menu_delete"
+                app:iconTint="#DC2626"
+                app:strokeColor="#DC2626"
+                app:strokeWidth="2dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/gridFeatures" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
 
-    <!-- Bottom Navigation -->
+    <!-- Bottom Navigation - COLORS REMOVED TO PREVENT CRASH -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="0dp"
