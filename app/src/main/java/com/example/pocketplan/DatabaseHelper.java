@@ -33,6 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_SALARY_ID = "id";
     private static final String COL_SALARY_AMOUNT = "amount";
     private static final String COL_SALARY_UPDATED = "updated_at";
+    private static final String TABLE_SETTINGS = "settings";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -113,55 +114,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return transactions;
     }
 
-    public double getTotalIncome() {
-        double total = 0;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
 
-        try {
-            cursor = db.rawQuery(
-                    "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
-                            " WHERE " + COL_TYPE + " = 'INCOME'", null);
-
-            if (cursor != null && cursor.moveToFirst()) {
-                total = cursor.getDouble(0);
-            }
-
-            Log.d(TAG, "Total Income: " + total);
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error calculating income: " + e.getMessage(), e);
-        } finally {
-            if (cursor != null) cursor.close();
-        }
-
-        return total;
-    }
-
-    public double getTotalExpense() {
-        double total = 0;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
-
-        try {
-            cursor = db.rawQuery(
-                    "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
-                            " WHERE " + COL_TYPE + " = 'EXPENSE'", null);
-
-            if (cursor != null && cursor.moveToFirst()) {
-                total = cursor.getDouble(0);
-            }
-
-            Log.d(TAG, "Total Expense: " + total);
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error calculating expense: " + e.getMessage(), e);
-        } finally {
-            if (cursor != null) cursor.close();
-        }
-
-        return total;
-    }
 
     public boolean deleteTransaction(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -171,54 +124,200 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // ==================== SALARY METHODS ====================
-
-    public double getSalary() {
-        double salary = 0;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
+    
+    public long addTransaction(String title, String category, double amount,
+                               String note, String type, long timestamp) {
+        SQLiteDatabase db = null;
+        long result = -1;
 
         try {
-            cursor = db.rawQuery("SELECT " + COL_SALARY_AMOUNT + " FROM " + TABLE_SALARY + " LIMIT 1", null);
+            db = this.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put("title", title);
+            values.put("category", category);
+            values.put("amount", amount);
+            values.put("note", note);
+            values.put("type", type);
+            values.put("timestamp", timestamp);
+
+            result = db.insert(TABLE_TRANSACTIONS, null, values);
+
+            Log.d("DatabaseHelper", "Transaction added with ID: " + result);
+
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error adding transaction: " + e.getMessage(), e);
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get total income from all INCOME transactions
+     * @return Total income amount
+     */
+    public double getTotalIncome() {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        double totalIncome = 0;
+
+        try {
+            db = this.getReadableDatabase();
+
+            String query = "SELECT SUM(amount) as total FROM " + TABLE_TRANSACTIONS +
+                    " WHERE type = 'INCOME'";
+
+            cursor = db.rawQuery(query, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                totalIncome = cursor.getDouble(0);
+            }
+
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error getting total income: " + e.getMessage(), e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
+
+        return totalIncome;
+    }
+
+    /**
+     * Get total expense from all EXPENSE transactions
+     * @return Total expense amount
+     */
+    public double getTotalExpense() {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        double totalExpense = 0;
+
+        try {
+            db = this.getReadableDatabase();
+
+            String query = "SELECT SUM(amount) as total FROM " + TABLE_TRANSACTIONS +
+                    " WHERE type = 'EXPENSE'";
+
+            cursor = db.rawQuery(query, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                totalExpense = cursor.getDouble(0);
+            }
+
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error getting total expense: " + e.getMessage(), e);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
+
+        return totalExpense;
+    }
+
+    /**
+     * Clear all transactions from the database
+     * @return true if successful, false otherwise
+     */
+    public boolean clearAllTransactions() {
+        SQLiteDatabase db = null;
+        try {
+            db = this.getWritableDatabase();
+
+            // Delete all rows from transactions table
+            int rowsDeleted = db.delete(TABLE_TRANSACTIONS, null, null);
+
+            Log.d("DatabaseHelper", "Cleared " + rowsDeleted + " transactions");
+            return true;
+
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error clearing transactions: " + e.getMessage(), e);
+            return false;
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
+    }
+
+    public double getSalary() {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        double salary = 0;
+
+        try {
+            db = this.getReadableDatabase();
+
+            String query = "SELECT value FROM " + TABLE_SETTINGS +
+                    " WHERE key = 'salary'";
+
+            cursor = db.rawQuery(query, null);
 
             if (cursor != null && cursor.moveToFirst()) {
                 salary = cursor.getDouble(0);
             }
 
-            Log.d(TAG, "Current Salary: " + salary);
-
         } catch (Exception e) {
-            Log.e(TAG, "Error getting salary: " + e.getMessage(), e);
+            Log.e("DatabaseHelper", "Error getting salary: " + e.getMessage(), e);
         } finally {
-            if (cursor != null) cursor.close();
+            if (cursor != null) {
+                cursor.close();
+            }
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
 
         return salary;
     }
 
-    public boolean setSalary(double amount) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COL_SALARY_AMOUNT, amount);
-        values.put(COL_SALARY_UPDATED, System.currentTimeMillis());
+    /**
+     * Set/Update salary in settings table
+     * @param salary Salary amount to set
+     * @return true if successful, false otherwise
+     */
+    public boolean setSalary(double salary) {
+        SQLiteDatabase db = null;
 
         try {
-            // Update the first (and only) row
-            int rowsUpdated = db.update(TABLE_SALARY, values, COL_SALARY_ID + " = 1", null);
+            db = this.getWritableDatabase();
 
-            if (rowsUpdated > 0) {
-                Log.d(TAG, "Salary updated to: " + amount);
-                return true;
-            } else {
-                // If no row exists, insert one
-                long result = db.insert(TABLE_SALARY, null, values);
-                Log.d(TAG, "Salary inserted: " + amount);
-                return result != -1;
+            ContentValues values = new ContentValues();
+            values.put("key", "salary");
+            values.put("value", salary);
+
+            // Try to update first
+            int rowsUpdated = db.update(TABLE_SETTINGS, values, "key = ?",
+                    new String[]{"salary"});
+
+            // If no rows updated, insert new
+            if (rowsUpdated == 0) {
+                db.insert(TABLE_SETTINGS, null, values);
             }
 
+            Log.d("DatabaseHelper", "Salary set to: " + salary);
+            return true;
+
         } catch (Exception e) {
-            Log.e(TAG, "Error setting salary: " + e.getMessage(), e);
+            Log.e("DatabaseHelper", "Error setting salary: " + e.getMessage(), e);
             return false;
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
         }
     }
+
+
 }

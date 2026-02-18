@@ -3,6 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.pocketplan">
 
+    <!-- CAMERA PERMISSION -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- READ IMAGES FROM GALLERY (for Android 13+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- READ EXTERNAL STORAGE (for older Android versions) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -30,6 +40,8 @@
         <activity
             android:name=".AddTransactionActivity"
             android:exported="false" />
+
+
 
     </application>
 
