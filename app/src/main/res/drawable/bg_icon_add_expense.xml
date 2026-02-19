@@ -1,22 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
     <!-- Background circle -->
     <item>
         <shape android:shape="oval">
-            <solid android:color="#EFF6FF" />
-            <size android:width="56dp" android:height="56dp" />
+            <solid android:color="#FFEBEE"/>
+            <size android:width="56dp" android:height="56dp"/>
         </shape>
     </item>
-    
-    <!-- Plus icon -->
-    <item android:top="16dp" android:bottom="16dp" android:left="16dp" android:right="16dp">
+
+    <!-- Horizontal bar (minus sign) -->
+    <item
+        android:top="25dp"
+        android:bottom="25dp"
+        android:left="14dp"
+        android:right="14dp">
         <shape android:shape="rectangle">
-            <solid android:color="#3B82F6" />
+            <solid android:color="#C62828"/>
+            <corners android:radius="3dp"/>
         </shape>
     </item>
-    <item android:top="24dp" android:bottom="24dp" android:left="12dp" android:right="12dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#3B82F6" />
-        </shape>
+
+    <!-- Small downward arrow head - left side -->
+    <item
+        android:top="28dp"
+        android:bottom="14dp"
+        android:left="14dp"
+        android:right="28dp">
+        <rotate
+            android:fromDegrees="45"
+            android:pivotX="100%"
+            android:pivotY="0%">
+            <shape android:shape="rectangle">
+                <solid android:color="#C62828"/>
+                <corners android:radius="2dp"/>
+            </shape>
+        </rotate>
     </item>
+
+    <!-- Small downward arrow head - right side -->
+    <item
+        android:top="28dp"
+        android:bottom="14dp"
+        android:left="28dp"
+        android:right="14dp">
+        <rotate
+            android:fromDegrees="-45"
+            android:pivotX="0%"
+            android:pivotY="0%">
+            <shape android:shape="rectangle">
+                <solid android:color="#C62828"/>
+                <corners android:radius="2dp"/>
+            </shape>
+        </rotate>
+    </item>
+
 </layer-list>

@@ -80,37 +80,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ==================== TRANSACTION METHODS ====================
 
-    public List<Transaction> getAllTransactions() {
-        List<Transaction> transactions = new ArrayList<>();
+    public List<com.example.pocketplan.models.Transaction> getAllTransactions() {
+        List<com.example.pocketplan.models.Transaction> transactions = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = null;
-
         try {
-            cursor = db.query(TABLE_TRANSACTIONS, null, null, null, null, null, COL_TIMESTAMP + " DESC");
-
-            if (cursor != null && cursor.moveToFirst()) {
+            Cursor cursor = db.rawQuery(
+                    "SELECT * FROM " + TABLE_TRANSACTIONS +
+                            " ORDER BY " + COL_TIMESTAMP + " DESC", null);
+            if (cursor.moveToFirst()) {
                 do {
-                    Transaction transaction = new Transaction(
-                            cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(COL_CATEGORY)),
-                            cursor.getDouble(cursor.getColumnIndexOrThrow(COL_AMOUNT)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(COL_NOTE)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(COL_TYPE)),
-                            cursor.getLong(cursor.getColumnIndexOrThrow(COL_TIMESTAMP))
-                    );
-                    transactions.add(transaction);
+                    com.example.pocketplan.models.Transaction t =
+                            new com.example.pocketplan.models.Transaction(
+                                    cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
+                                    cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)),
+                                    cursor.getString(cursor.getColumnIndexOrThrow(COL_CATEGORY)),
+                                    cursor.getDouble(cursor.getColumnIndexOrThrow(COL_AMOUNT)),
+                                    cursor.getString(cursor.getColumnIndexOrThrow(COL_NOTE)),
+                                    cursor.getString(cursor.getColumnIndexOrThrow(COL_TYPE)),
+                                    cursor.getLong(cursor.getColumnIndexOrThrow(COL_TIMESTAMP))
+                            );
+                    transactions.add(t);
                 } while (cursor.moveToNext());
             }
-
-            Log.d(TAG, "Retrieved " + transactions.size() + " transactions");
-
+            cursor.close();
         } catch (Exception e) {
-            Log.e(TAG, "Error getting transactions: " + e.getMessage(), e);
-        } finally {
-            if (cursor != null) cursor.close();
+            Log.e("DatabaseHelper", "Error getAllTransactions: " + e.getMessage(), e);
         }
-
         return transactions;
     }
 
@@ -317,6 +312,90 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.close();
             }
         }
+    }
+
+    // ADD THESE METHODS TO YOUR DatabaseHelper.java if they don't already exist:
+
+    // ─── Get expense total for a specific category ───────────────────────────────
+    public double getExpenseByCategory(String category) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double total = 0;
+        try {
+            Cursor cursor = db.rawQuery(
+                    "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
+                            " WHERE " + COL_TYPE + " = 'EXPENSE' AND " + COL_CATEGORY + " = ?",
+                    new String[]{category});
+            if (cursor.moveToFirst() && !cursor.isNull(0)) {
+                total = cursor.getDouble(0);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error getExpenseByCategory: " + e.getMessage(), e);
+        }
+        return total;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+//  ADD ALL OF THESE METHODS TO DatabaseHelper.java
+//  (Only add methods you don't already have)
+// ══════════════════════════════════════════════════════════════════════
+
+    // ─── 1. Get expense total for a specific category ────────────────────
+
+
+    // ─── 2. Get expense total for a specific month/year ──────────────────
+//  year  = e.g. 2025
+//  month = 0-based (Calendar.JANUARY = 0, Calendar.DECEMBER = 11)
+    public double getMonthlyExpense(int year, int month) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double total = 0;
+        try {
+            java.util.Calendar start = java.util.Calendar.getInstance();
+            start.set(year, month, 1, 0, 0, 0);
+            start.set(java.util.Calendar.MILLISECOND, 0);
+
+            java.util.Calendar end = (java.util.Calendar) start.clone();
+            end.add(java.util.Calendar.MONTH, 1);
+
+            Cursor cursor = db.rawQuery(
+                    "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
+                            " WHERE " + COL_TYPE + " = 'EXPENSE'" +
+                            " AND " + COL_TIMESTAMP + " >= ?" +
+                            " AND " + COL_TIMESTAMP + " < ?",
+                    new String[]{
+                            String.valueOf(start.getTimeInMillis()),
+                            String.valueOf(end.getTimeInMillis())
+                    });
+            if (cursor.moveToFirst() && !cursor.isNull(0)) {
+                total = cursor.getDouble(0);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error getMonthlyExpense: " + e.getMessage(), e);
+        }
+        return total;
+    }
+    public double getExpenseForRange(long startTime, long endTime) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double total = 0;
+        try {
+            Cursor cursor = db.rawQuery(
+                    "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
+                            " WHERE " + COL_TYPE + " = 'EXPENSE'" +
+                            " AND " + COL_TIMESTAMP + " >= ?" +
+                            " AND " + COL_TIMESTAMP + " < ?",
+                    new String[]{
+                            String.valueOf(startTime),
+                            String.valueOf(endTime)
+                    });
+            if (cursor.moveToFirst() && !cursor.isNull(0)) {
+                total = cursor.getDouble(0);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error getExpenseForRange: " + e.getMessage(), e);
+        }
+        return total;
     }
 
 
