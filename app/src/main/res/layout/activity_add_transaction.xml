@@ -29,16 +29,30 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="8dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add Transaction"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A1A"
-                    android:fontFamily="sans-serif-medium"/>
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Add Expense"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A1A1A"
+                        android:fontFamily="sans-serif-medium"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Track your spending"
+                        android:textSize="13sp"
+                        android:textColor="#9E9E9E"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
 
                 <ImageButton
                     android:id="@+id/btnClose"
@@ -51,50 +65,47 @@
                     android:contentDescription="Close"/>
             </RelativeLayout>
 
-            <!-- Type Toggle (Income/Expense) -->
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/toggleType"
-                android:layout_width="match_parent"
+            <!-- Expense Badge -->
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_marginBottom="24dp"
-                app:singleSelection="true"
-                app:checkedButton="@id/btnExpense">
+                android:background="#FFF1F1"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnExpense"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:text="Expense"
-                    android:textSize="15sp"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    app:cornerRadius="12dp"/>
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="#F44336"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnIncome"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:text="Income"
-                    android:textSize="15sp"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    app:cornerRadius="12dp"/>
-            </com.google.android.material.button.MaterialButtonToggleGroup>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="EXPENSE"
+                    android:textColor="#F44336"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"/>
+            </LinearLayout>
 
-            <!-- Amount Input with Currency Icon -->
+            <!-- Amount Input -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilAmount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="Amount"
+                android:hint="Amount (₹)"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:startIconDrawable="@android:drawable/ic_menu_sort_by_size"
-                app:startIconTint="#4CAF50">
+                app:startIconTint="#F44336">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etAmount"
@@ -127,7 +138,7 @@
                     android:paddingVertical="16dp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Category Dropdown with Dynamic Icon -->
+            <!-- Category Dropdown -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilCategory"
                 android:layout_width="match_parent"
@@ -181,12 +192,12 @@
                 android:id="@+id/btnSave"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Save Transaction"
+                android:text="Save Expense"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:cornerRadius="12dp"
                 app:elevation="0dp"
-                android:backgroundTint="#4CAF50"
+                android:backgroundTint="#F44336"
                 android:textColor="@android:color/white"/>
 
         </LinearLayout>

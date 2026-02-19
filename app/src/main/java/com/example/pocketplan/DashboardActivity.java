@@ -7,6 +7,9 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +18,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -26,37 +30,18 @@ public class DashboardActivity extends AppCompatActivity {
 
     private static final String TAG = "DashboardActivity";
 
-    // UI Components
-    private TextView tvGreeting;
-    private TextView tvUserName;
-    private TextView tvTotalBalance;
-    private TextView tvIncome;
-    private TextView tvExpense;
-    private ImageView imgProfile;  // ADDED
-
-    // Feature Cards
-    private MaterialCardView cardAddExpense;
-    private MaterialCardView cardAddIncome;
-    private MaterialCardView cardBudget;
-    private MaterialCardView cardReports;
-
-    // Clear All Button
+    private TextView tvGreeting, tvUserName, tvTotalBalance, tvIncome, tvExpense;
+    private ImageView imgProfile;
+    private MaterialCardView cardAddExpense, cardAddIncome, cardBudget, cardReports;
     private MaterialButton btnClearAll;
-
-    // Bottom Navigation
     private BottomNavigationView bottomNavigation;
-
-    // Database
     private DatabaseHelper databaseHelper;
-
-    // SharedPreferences
     private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Check if user is registered
         prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         if (!prefs.contains("name")) {
             startActivity(new Intent(this, RegisterActivity.class));
@@ -70,12 +55,8 @@ public class DashboardActivity extends AppCompatActivity {
 
         initializeViews();
         setupGreeting();
-
         tvUserName.setText(prefs.getString("name", "User"));
-
-        // Load profile image
         loadProfileImage();
-
         setupClickListeners();
         setupBottomNavigation();
     }
@@ -83,9 +64,8 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume called - loading balance");
         loadBalance();
-        loadProfileImage(); // Reload profile image when returning to this activity
+        loadProfileImage();
     }
 
     private void initializeViews() {
@@ -94,7 +74,7 @@ public class DashboardActivity extends AppCompatActivity {
         tvTotalBalance = findViewById(R.id.tvTotalBalance);
         tvIncome = findViewById(R.id.tvIncome);
         tvExpense = findViewById(R.id.tvExpense);
-        imgProfile = findViewById(R.id.imgProfile);  // ADDED
+        imgProfile = findViewById(R.id.imgProfile);
 
         cardAddExpense = findViewById(R.id.cardAddExpense);
         cardAddIncome = findViewById(R.id.cardAddIncome);
@@ -102,22 +82,18 @@ public class DashboardActivity extends AppCompatActivity {
         cardReports = findViewById(R.id.cardReports);
 
         btnClearAll = findViewById(R.id.btnClearAll);
-
         bottomNavigation = findViewById(R.id.bottomNavigation);
     }
 
     private void setupGreeting() {
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-
         String greeting;
-        if (hour < 12) greeting = "Good Morning,";
-        else if (hour < 17) greeting = "Good Afternoon,";
-        else greeting = "Good Evening,";
-
+        if (hour < 12)       greeting = "Good Morning,";
+        else if (hour < 17)  greeting = "Good Afternoon,";
+        else                 greeting = "Good Evening,";
         tvGreeting.setText(greeting);
     }
 
-    // ADDED: Load profile image from SharedPreferences
     private void loadProfileImage() {
         try {
             String imageBase64 = prefs.getString("profile_image", null);
@@ -125,11 +101,8 @@ public class DashboardActivity extends AppCompatActivity {
                 byte[] decodedBytes = Base64.decode(imageBase64, Base64.DEFAULT);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
                 imgProfile.setImageBitmap(bitmap);
-                Log.d(TAG, "Profile image loaded successfully");
             } else {
-                // Set default placeholder
                 imgProfile.setImageResource(R.drawable.ic_profile);
-                Log.d(TAG, "No profile image found, using placeholder");
             }
         } catch (Exception e) {
             Log.e(TAG, "Error loading profile image: " + e.getMessage(), e);
@@ -138,39 +111,115 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
+        imgProfile.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class)));
 
-        // Profile image click - navigate to Profile
-        imgProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ProfileActivity.class);
-            startActivity(intent);
-        });
+        // Add Expense → AddTransactionActivity (expense only)
+        cardAddExpense.setOnClickListener(v ->
+                startActivity(new Intent(this, AddTransactionActivity.class)));
 
-        // Add Expense Card - Navigate to AddTransactionActivity
-        cardAddExpense.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddTransactionActivity.class);
-            startActivity(intent);
-        });
+        // Add Income → Beautiful Bottom Sheet
+        cardAddIncome.setOnClickListener(v -> showAddIncomeBottomSheet());
 
-        // Add Income Card - Show quick dialog and save directly
-        cardAddIncome.setOnClickListener(v -> showAddIncomeDialog());
+        // Budget → BudgetActivity
+        cardBudget.setOnClickListener(v ->
+                startActivity(new Intent(this, BudgetActivity.class)));
 
-        // Budget/Salary card
-        cardBudget.setOnClickListener(v -> showSalaryDialog());
-
-        // Reports card - Navigate to Transactions
+        // Reports → ReportsActivity
         cardReports.setOnClickListener(v ->
-                startActivity(new Intent(this, TransactionsActivity.class)));
+                startActivity(new Intent(this, ReportsActivity.class)));
 
-        // Clear All Button
         btnClearAll.setOnClickListener(v -> showClearAllDialog());
     }
 
-    private void setupBottomNavigation() {
+    private void showAddIncomeBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme);
+        bottomSheetDialog.setContentView(R.layout.dialog_add_income);
 
+        // Get references
+        EditText etAmount = bottomSheetDialog.findViewById(R.id.etIncomeAmount);
+        TextInputEditText etSource = bottomSheetDialog.findViewById(R.id.etIncomeSource);
+        AutoCompleteTextView actvCategory = bottomSheetDialog.findViewById(R.id.actvIncomeCategory);
+        MaterialButton btnAdd = bottomSheetDialog.findViewById(R.id.btnAddIncome);
+        MaterialButton btnCancel = bottomSheetDialog.findViewById(R.id.btnCancelIncome);
+
+        // Setup income category dropdown
+        String[] incomeCategories = {
+                "Salary", "Freelance", "Business", "Investment",
+                "Gift", "Rental", "Bonus", "Other"
+        };
+        if (actvCategory != null) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    this, android.R.layout.simple_dropdown_item_1line, incomeCategories);
+            actvCategory.setAdapter(adapter);
+        }
+
+        if (btnAdd != null) {
+            btnAdd.setOnClickListener(v -> {
+                String amountStr = etAmount != null ? etAmount.getText().toString().trim() : "";
+                String source = etSource != null ? etSource.getText().toString().trim() : "";
+                String category = actvCategory != null ? actvCategory.getText().toString().trim() : "Income";
+
+                if (amountStr.isEmpty()) {
+                    if (etAmount != null) etAmount.setError("Enter an amount");
+                    return;
+                }
+
+                try {
+                    double amount = Double.parseDouble(amountStr);
+                    if (amount <= 0) {
+                        if (etAmount != null) etAmount.setError("Amount must be greater than 0");
+                        return;
+                    }
+
+                    if (source.isEmpty()) source = "Income";
+                    if (category.isEmpty()) category = "Income";
+
+                    boolean success = saveIncomeTransaction(amount, source, category);
+
+                    if (success) {
+                        Toast.makeText(this, "✓ Income added successfully!", Toast.LENGTH_SHORT).show();
+                        loadBalance();
+                        bottomSheetDialog.dismiss();
+                    } else {
+                        Toast.makeText(this, "Failed to add income", Toast.LENGTH_SHORT).show();
+                    }
+
+                } catch (NumberFormatException e) {
+                    if (etAmount != null) etAmount.setError("Invalid amount");
+                }
+            });
+        }
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> bottomSheetDialog.dismiss());
+        }
+
+        bottomSheetDialog.show();
+    }
+
+    private boolean saveIncomeTransaction(double amount, String description, String category) {
+        try {
+            long result = databaseHelper.addTransaction(
+                    description,
+                    category,
+                    amount,
+                    "",
+                    "INCOME",
+                    System.currentTimeMillis()
+            );
+            Log.d(TAG, "Income transaction saved with ID: " + result);
+            return result != -1;
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving income: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    private void setupBottomNavigation() {
         bottomNavigation.setSelectedItemId(R.id.nav_dashboard);
 
         bottomNavigation.setOnNavigationItemSelectedListener(item -> {
-
             if (item.getItemId() == R.id.nav_dashboard) return true;
 
             if (item.getItemId() == R.id.nav_transactions) {
@@ -192,173 +241,18 @@ public class DashboardActivity extends AppCompatActivity {
             double salary = databaseHelper.getSalary();
             double income = databaseHelper.getTotalIncome();
             double expense = databaseHelper.getTotalExpense();
-
             double totalBalance = salary + income - expense;
 
-            Log.d(TAG, "Balance - Salary: " + salary + ", Income: " + income +
-                    ", Expense: " + expense + ", Total: " + totalBalance);
-
-            updateBalance(totalBalance, income, expense);
+            tvTotalBalance.setText(String.format(Locale.getDefault(), "₹%.2f", totalBalance));
+            tvIncome.setText(String.format(Locale.getDefault(), "₹%.2f", income));
+            tvExpense.setText(String.format(Locale.getDefault(), "₹%.2f", expense));
 
         } catch (Exception e) {
             Log.e(TAG, "Error loading balance: " + e.getMessage(), e);
-            updateBalance(0, 0, 0);
+            tvTotalBalance.setText("₹0.00");
+            tvIncome.setText("₹0.00");
+            tvExpense.setText("₹0.00");
         }
-    }
-
-    private void updateBalance(double totalBalance, double income, double expense) {
-        tvTotalBalance.setText(String.format(Locale.getDefault(), "₹%.2f", totalBalance));
-        tvIncome.setText(String.format(Locale.getDefault(), "₹%.2f", income));
-        tvExpense.setText(String.format(Locale.getDefault(), "₹%.2f", expense));
-    }
-
-    private void showAddIncomeDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Add Income");
-
-        // Create input layout
-        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
-        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
-        layout.setPadding(50, 20, 50, 20);
-
-        // Amount input
-        final TextInputEditText inputAmount = new TextInputEditText(this);
-        inputAmount.setHint("Enter amount");
-        inputAmount.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
-        layout.addView(inputAmount);
-
-        // Description input
-        final TextInputEditText inputDescription = new TextInputEditText(this);
-        inputDescription.setHint("Description (optional)");
-        android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.topMargin = 20;
-        inputDescription.setLayoutParams(params);
-        layout.addView(inputDescription);
-
-        builder.setView(layout);
-
-        builder.setPositiveButton("Add", (dialog, which) -> {
-            String amountStr = inputAmount.getText().toString().trim();
-            String description = inputDescription.getText().toString().trim();
-
-            if (amountStr.isEmpty()) {
-                Toast.makeText(this, "Please enter amount", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            try {
-                double amount = Double.parseDouble(amountStr);
-
-                if (amount <= 0) {
-                    Toast.makeText(this, "Amount must be greater than 0", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (description.isEmpty()) {
-                    description = "Income";
-                }
-
-                // Save income transaction directly to database
-                boolean success = saveIncomeTransaction(amount, description);
-
-                if (success) {
-                    Toast.makeText(this, "Income added successfully!", Toast.LENGTH_SHORT).show();
-                    loadBalance();
-                } else {
-                    Toast.makeText(this, "Failed to add income", Toast.LENGTH_SHORT).show();
-                }
-
-            } catch (NumberFormatException e) {
-                Toast.makeText(this, "Invalid amount", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-
-    private boolean saveIncomeTransaction(double amount, String description) {
-        try {
-            long timestamp = System.currentTimeMillis();
-
-            long result = databaseHelper.addTransaction(
-                    description,
-                    "Income",
-                    amount,
-                    "",
-                    "INCOME",
-                    timestamp
-            );
-
-            Log.d(TAG, "Income transaction saved with ID: " + result);
-            return result != -1;
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error saving income: " + e.getMessage(), e);
-            return false;
-        }
-    }
-
-    private void showSalaryDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Set Monthly Salary");
-
-        final TextInputEditText input = new TextInputEditText(this);
-        input.setHint("Enter your monthly salary");
-        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
-
-        double currentSalary = databaseHelper.getSalary();
-        if (currentSalary > 0) {
-            input.setText(String.valueOf(currentSalary));
-        }
-
-        android.widget.FrameLayout container = new android.widget.FrameLayout(this);
-        android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.leftMargin = 50;
-        params.rightMargin = 50;
-        input.setLayoutParams(params);
-        container.addView(input);
-
-        builder.setView(container);
-
-        builder.setPositiveButton("Save", (dialog, which) -> {
-            String salaryStr = input.getText().toString().trim();
-
-            if (salaryStr.isEmpty()) {
-                Toast.makeText(this, "Please enter salary", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            try {
-                double salary = Double.parseDouble(salaryStr);
-
-                if (salary < 0) {
-                    Toast.makeText(this, "Salary cannot be negative", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                boolean success = databaseHelper.setSalary(salary);
-
-                if (success) {
-                    Toast.makeText(this, "Salary updated successfully", Toast.LENGTH_SHORT).show();
-                    loadBalance();
-                } else {
-                    Toast.makeText(this, "Failed to update salary", Toast.LENGTH_SHORT).show();
-                }
-
-            } catch (NumberFormatException e) {
-                Toast.makeText(this, "Invalid salary amount", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
     }
 
     private void showClearAllDialog() {
@@ -366,14 +260,13 @@ public class DashboardActivity extends AppCompatActivity {
                 .setTitle("Clear All Data")
                 .setMessage("This will delete:\n\n• All transactions (Income & Expenses)\n• Monthly salary\n• All financial records\n\nThis action cannot be undone!")
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton("Clear All", (dialog, which) -> {
-                    new AlertDialog.Builder(this)
-                            .setTitle("Are you absolutely sure?")
-                            .setMessage("This will permanently delete all your financial data!")
-                            .setPositiveButton("Yes, Delete Everything", (d, w) -> clearAllData())
-                            .setNegativeButton("Cancel", null)
-                            .show();
-                })
+                .setPositiveButton("Clear All", (dialog, which) ->
+                        new AlertDialog.Builder(this)
+                                .setTitle("Are you absolutely sure?")
+                                .setMessage("This will permanently delete all your financial data!")
+                                .setPositiveButton("Yes, Delete Everything", (d, w) -> clearAllData())
+                                .setNegativeButton("Cancel", null)
+                                .show())
                 .setNegativeButton("Cancel", null)
                 .show();
     }
@@ -389,10 +282,9 @@ public class DashboardActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Failed to clear some data", Toast.LENGTH_SHORT).show();
             }
-
         } catch (Exception e) {
             Log.e(TAG, "Error clearing data: " + e.getMessage(), e);
-            Toast.makeText(this, "Error clearing data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error clearing data", Toast.LENGTH_SHORT).show();
         }
     }
 

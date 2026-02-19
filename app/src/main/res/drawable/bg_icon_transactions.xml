@@ -1,30 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
     <!-- Background circle -->
     <item>
         <shape android:shape="oval">
-            <solid android:color="#F0FDF4" />
-            <size android:width="56dp" android:height="56dp" />
+            <solid android:color="#F3E5F5"/>
+            <size android:width="56dp" android:height="56dp"/>
         </shape>
     </item>
-    
-    <!-- List lines icon -->
-    <item android:top="18dp" android:bottom="32dp" android:left="14dp" android:right="14dp">
+
+    <!-- Bar 1 - short left bar -->
+    <item
+        android:top="30dp"
+        android:bottom="15dp"
+        android:left="14dp"
+        android:right="41dp">
         <shape android:shape="rectangle">
-            <solid android:color="#059669" />
-            <corners android:radius="2dp" />
+            <solid android:color="#6A1B9A"/>
+            <corners android:radius="2dp"/>
         </shape>
     </item>
-    <item android:top="26dp" android:bottom="24dp" android:left="14dp" android:right="14dp">
+
+    <!-- Bar 2 - tall middle bar -->
+    <item
+        android:top="18dp"
+        android:bottom="15dp"
+        android:left="23dp"
+        android:right="23dp">
         <shape android:shape="rectangle">
-            <solid android:color="#059669" />
-            <corners android:radius="2dp" />
+            <solid android:color="#6A1B9A"/>
+            <corners android:radius="2dp"/>
         </shape>
     </item>
-    <item android:top="34dp" android:bottom="16dp" android:left="14dp" android:right="14dp">
+
+    <!-- Bar 3 - medium right bar -->
+    <item
+        android:top="24dp"
+        android:bottom="15dp"
+        android:left="41dp"
+        android:right="14dp">
         <shape android:shape="rectangle">
-            <solid android:color="#059669" />
-            <corners android:radius="2dp" />
+            <solid android:color="#6A1B9A"/>
+            <corners android:radius="2dp"/>
         </shape>
     </item>
+
+    <!-- Base line -->
+    <item
+        android:top="40dp"
+        android:bottom="14dp"
+        android:left="13dp"
+        android:right="13dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#6A1B9A"/>
+            <corners android:radius="1dp"/>
+        </shape>
+    </item>
+
 </layer-list>

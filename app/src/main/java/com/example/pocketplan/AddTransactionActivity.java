@@ -12,7 +12,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -26,12 +25,10 @@ public class AddTransactionActivity extends AppCompatActivity {
     private TextInputEditText etTitle, etAmount, etNote;
     private AutoCompleteTextView actvCategory;
     private TextInputLayout tilCategory;
-    private MaterialButtonToggleGroup toggleType;
-    private MaterialButton btnSave, btnExpense, btnIncome;
+    private MaterialButton btnSave;
 
     DatabaseHelper databaseHelper;
 
-    // Category icons mapping
     private Map<String, Integer> categoryIcons;
     private String[] categories = {
             "Food & Dining",
@@ -51,19 +48,10 @@ public class AddTransactionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_transaction);
 
-        // Initialize views
         initializeViews();
-
-        // Initialize database
         databaseHelper = new DatabaseHelper(this);
-
-        // Setup category icons
         setupCategoryIcons();
-
-        // Setup category dropdown
         setupCategoryDropdown();
-
-        // Setup listeners
         setupListeners();
     }
 
@@ -73,10 +61,7 @@ public class AddTransactionActivity extends AppCompatActivity {
         etNote = findViewById(R.id.etNote);
         actvCategory = findViewById(R.id.actvCategory);
         tilCategory = findViewById(R.id.tilCategory);
-        toggleType = findViewById(R.id.toggleType);
         btnSave = findViewById(R.id.btnSave);
-        btnExpense = findViewById(R.id.btnExpense);
-        btnIncome = findViewById(R.id.btnIncome);
     }
 
     private void setupCategoryIcons() {
@@ -101,7 +86,6 @@ public class AddTransactionActivity extends AppCompatActivity {
         );
         actvCategory.setAdapter(adapter);
 
-        // Update icon when category is selected
         actvCategory.setOnItemClickListener((parent, view, position, id) -> {
             String selectedCategory = categories[position];
             updateCategoryIcon(selectedCategory);
@@ -113,64 +97,31 @@ public class AddTransactionActivity extends AppCompatActivity {
         if (iconRes != null) {
             tilCategory.setStartIconDrawable(iconRes);
 
-            // Change icon color based on category
             int iconColor;
             switch (category) {
-                case "Food & Dining":
-                    iconColor = 0xFFFF9800; // Orange
-                    break;
-                case "Transportation":
-                    iconColor = 0xFF2196F3; // Blue
-                    break;
-                case "Shopping":
-                    iconColor = 0xFFE91E63; // Pink
-                    break;
-                case "Entertainment":
-                    iconColor = 0xFF9C27B0; // Purple
-                    break;
-                case "Bills & Utilities":
-                    iconColor = 0xFFF44336; // Red
-                    break;
-                case "Healthcare":
-                    iconColor = 0xFF4CAF50; // Green
-                    break;
-                case "Education":
-                    iconColor = 0xFF3F51B5; // Indigo
-                    break;
-                case "Travel":
-                    iconColor = 0xFF00BCD4; // Cyan
-                    break;
-                case "Groceries":
-                    iconColor = 0xFF8BC34A; // Light Green
-                    break;
-                default:
-                    iconColor = 0xFF607D8B; // Blue Grey
-                    break;
+                case "Food & Dining":       iconColor = 0xFFFF9800; break;
+                case "Transportation":      iconColor = 0xFF2196F3; break;
+                case "Shopping":            iconColor = 0xFFE91E63; break;
+                case "Entertainment":       iconColor = 0xFF9C27B0; break;
+                case "Bills & Utilities":   iconColor = 0xFFF44336; break;
+                case "Healthcare":          iconColor = 0xFF4CAF50; break;
+                case "Education":           iconColor = 0xFF3F51B5; break;
+                case "Travel":              iconColor = 0xFF00BCD4; break;
+                case "Groceries":           iconColor = 0xFF8BC34A; break;
+                default:                    iconColor = 0xFF607D8B; break;
             }
-            tilCategory.setStartIconTintList(android.content.res.ColorStateList.valueOf(iconColor));
+            tilCategory.setStartIconTintList(
+                    android.content.res.ColorStateList.valueOf(iconColor));
         }
     }
 
     private void setupListeners() {
-        // Close button
         findViewById(R.id.btnClose).setOnClickListener(v -> {
             setResult(RESULT_CANCELED);
             finish();
         });
 
-        // Save button
         btnSave.setOnClickListener(v -> saveTransaction());
-
-        // Type toggle listener (optional - for visual feedback)
-        toggleType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                if (checkedId == R.id.btnExpense) {
-                    btnSave.setBackgroundColor(0xFFF44336); // Red for expense
-                } else {
-                    btnSave.setBackgroundColor(0xFF4CAF50); // Green for income
-                }
-            }
-        });
     }
 
     private void saveTransaction() {
@@ -179,12 +130,6 @@ public class AddTransactionActivity extends AppCompatActivity {
         String note = etNote.getText().toString().trim();
         String amountStr = etAmount.getText().toString().trim();
 
-        // Determine type from toggle group
-        String type = (toggleType.getCheckedButtonId() == R.id.btnIncome)
-                ? "INCOME"
-                : "EXPENSE";
-
-        // Validation
         if (title.isEmpty()) {
             etTitle.setError("Title is required");
             etTitle.requestFocus();
@@ -217,7 +162,6 @@ public class AddTransactionActivity extends AppCompatActivity {
             return;
         }
 
-        // Insert into SQLite database
         SQLiteDatabase db = null;
         long result = -1;
 
@@ -229,27 +173,26 @@ public class AddTransactionActivity extends AppCompatActivity {
             values.put(DatabaseHelper.COL_CATEGORY, category);
             values.put(DatabaseHelper.COL_AMOUNT, amount);
             values.put(DatabaseHelper.COL_NOTE, note);
-            values.put(DatabaseHelper.COL_TYPE, type);
-            values.put(DatabaseHelper.COL_TIMESTAMP, System.currentTimeMillis()); // ✅ CRITICAL FIX
+            values.put(DatabaseHelper.COL_TYPE, "EXPENSE"); // Always expense
+            values.put(DatabaseHelper.COL_TIMESTAMP, System.currentTimeMillis());
 
             result = db.insert(DatabaseHelper.TABLE_TRANSACTIONS, null, values);
 
             if (result != -1) {
-                Log.d(TAG, "Transaction saved successfully with ID: " + result);
-                Toast.makeText(this, "✓ Transaction Saved Successfully", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Expense saved successfully with ID: " + result);
+                Toast.makeText(this, "✓ Expense Saved Successfully", Toast.LENGTH_SHORT).show();
 
-                // Send result back
                 Intent intent = new Intent();
                 intent.putExtra("success", true);
                 setResult(RESULT_OK, intent);
                 finish();
             } else {
-                Log.e(TAG, "Failed to insert transaction");
-                Toast.makeText(this, "❌ Failed to save transaction", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to insert expense");
+                Toast.makeText(this, "❌ Failed to save expense", Toast.LENGTH_SHORT).show();
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "Error saving transaction: " + e.getMessage(), e);
+            Log.e(TAG, "Error saving expense: " + e.getMessage(), e);
             Toast.makeText(this, "❌ Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }

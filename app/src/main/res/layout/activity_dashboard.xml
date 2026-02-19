@@ -21,7 +21,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Greeting -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -47,7 +46,6 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Profile Image -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgProfile"
             android:layout_width="60dp"
@@ -62,7 +60,6 @@
             app:shapeAppearanceOverlay="@style/CircleImageStyle" />
 
     </RelativeLayout>
-
 
     <!-- ScrollView for content -->
     <ScrollView
@@ -100,7 +97,6 @@
                     android:layout_height="wrap_content"
                     android:padding="20dp">
 
-                    <!-- Total Balance Section -->
                     <TextView
                         android:id="@+id/tvBalanceLabel"
                         android:layout_width="wrap_content"
@@ -116,7 +112,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="₹45,280.50"
+                        android:text="₹0.00"
                         android:textColor="#1A1F36"
                         android:textSize="32sp"
                         android:textStyle="bold"
@@ -124,7 +120,6 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tvBalanceLabel" />
 
-                    <!-- Income/Expense Row -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -169,7 +164,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:text="₹58,450"
+                                android:text="₹0.00"
                                 android:textColor="#1A1F36"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -211,7 +206,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:text="₹13,169.50"
+                                android:text="₹0.00"
                                 android:textColor="#1A1F36"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -288,10 +283,19 @@
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textAlignment="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Track spending"
+                            android:textColor="#9E9E9E"
+                            android:textSize="11sp"
+                            android:textAlignment="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Add Income Card - CHANGED FROM TRANSACTIONS -->
+                <!-- Add Income Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardAddIncome"
                     android:layout_width="0dp"
@@ -328,10 +332,19 @@
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textAlignment="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Record earnings"
+                            android:textColor="#9E9E9E"
+                            android:textSize="11sp"
+                            android:textAlignment="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Budget/Salary Card -->
+                <!-- Budget Card (was Set Salary) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardBudget"
                     android:layout_width="0dp"
@@ -362,15 +375,24 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:text="Set Salary"
+                            android:text="Budget"
                             android:textColor="#1A1F36"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textAlignment="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Set limits"
+                            android:textColor="#9E9E9E"
+                            android:textSize="11sp"
+                            android:textAlignment="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- View All Transactions Card - CHANGED FROM REPORTS -->
+                <!-- Reports Card (was View All) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardReports"
                     android:layout_width="0dp"
@@ -395,23 +417,32 @@
                         <View
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="@drawable/bg_icon_transactions" />
+                            android:background="@drawable/bg_icon_reports" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:text="View All"
+                            android:text="Reports"
                             android:textColor="#1A1F36"
                             android:textSize="14sp"
                             android:textStyle="bold"
+                            android:textAlignment="center" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="View analytics"
+                            android:textColor="#9E9E9E"
+                            android:textSize="11sp"
                             android:textAlignment="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
             </GridLayout>
 
-            <!-- Clear All Button - NEW -->
+            <!-- Clear All Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnClearAll"
                 style="@style/Widget.Material3.Button.OutlinedButton"
@@ -435,7 +466,7 @@
 
     </ScrollView>
 
-    <!-- Bottom Navigation - COLORS REMOVED TO PREVENT CRASH -->
+    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="0dp"

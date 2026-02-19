@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0F4F8">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#77BDE2"
+        app:elevation="0dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:paddingTop="25dp"
+            app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"
+            app:navigationIconTint="#FFFFFF"
+            app:title="Reports and Analytics"
+            app:titleTextColor="#FFFFFF"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reports and analytics"
+            android:textSize="30sp"
+            android:textColor="@color/black"
+            android:padding="5dp"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="20dp"
+            android:paddingTop="4dp">
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                android:background="#1E2859" android:padding="12dp" android:layout_marginEnd="6dp">
+                <TextView android:id="@+id/tvReportIncome" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0" android:textColor="#FFFFFF"
+                    android:textSize="18sp" android:textStyle="bold"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Income" android:textColor="#BBE9FF" android:textSize="11sp" android:layout_marginTop="2dp"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                android:background="#1E2859" android:padding="12dp" android:layout_marginEnd="6dp">
+                <TextView android:id="@+id/tvReportExpense" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0" android:textColor="#FFFFFF"
+                    android:textSize="18sp" android:textStyle="bold"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Expense" android:textColor="#BBE9FF" android:textSize="11sp" android:layout_marginTop="2dp"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                android:background="#1E2859" android:padding="12dp">
+                <TextView android:id="@+id/tvReportSavings" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0" android:textColor="#A5D6A7"
+                    android:textSize="18sp" android:textStyle="bold"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Savings" android:textColor="#BBE9FF" android:textSize="11sp" android:layout_marginTop="2dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Income vs Expense Pie Chart -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" app:cardCornerRadius="16dp"
+                app:cardElevation="3dp" app:cardBackgroundColor="#FFFFFF">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="20dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Income vs Expense" android:textColor="#1A1F36"
+                        android:textSize="16sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Overall distribution" android:textColor="#9E9E9E"
+                        android:textSize="12sp" android:layout_marginBottom="8dp"/>
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pieChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"/>
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center" android:layout_marginTop="8dp">
+                        <View android:layout_width="12dp" android:layout_height="12dp"
+                            android:background="#4CAF50" android:layout_marginEnd="6dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Income" android:textColor="#424242" android:textSize="13sp"
+                            android:layout_marginEnd="24dp"/>
+                        <View android:layout_width="12dp" android:layout_height="12dp"
+                            android:background="#F44336" android:layout_marginEnd="6dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Expense" android:textColor="#424242" android:textSize="13sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Category Pie Chart + breakdown -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" app:cardCornerRadius="16dp"
+                app:cardElevation="3dp" app:cardBackgroundColor="#FFFFFF">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="20dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Spending by Category" android:textColor="#1A1F36"
+                        android:textSize="16sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Where your money goes" android:textColor="#9E9E9E"
+                        android:textSize="12sp" android:layout_marginBottom="12dp"/>
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/categoryPieChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="240dp"/>
+
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:layout_marginTop="16dp">
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <TextView android:layout_width="24dp" android:layout_height="wrap_content" android:text="F" android:textSize="14sp"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                                android:text="Food and Dining" android:textColor="#424242" android:textSize="13sp" android:layout_marginStart="8dp"/>
+                            <ProgressBar android:id="@+id/progressCatFood" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="80dp" android:layout_height="6dp" android:progress="0"
+                                android:progressTint="#FF9800" android:trackTint="#FFF3E0" android:layout_marginEnd="8dp"/>
+                            <TextView android:id="@+id/tvCatFood" android:layout_width="72dp" android:layout_height="wrap_content"
+                                android:text="0" android:textColor="#FF9800" android:textSize="13sp" android:textStyle="bold" android:gravity="end"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <TextView android:layout_width="24dp" android:layout_height="wrap_content" android:text="T" android:textSize="14sp"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                                android:text="Transportation" android:textColor="#424242" android:textSize="13sp" android:layout_marginStart="8dp"/>
+                            <ProgressBar android:id="@+id/progressCatTransport" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="80dp" android:layout_height="6dp" android:progress="0"
+                                android:progressTint="#2196F3" android:trackTint="#E3F2FD" android:layout_marginEnd="8dp"/>
+                            <TextView android:id="@+id/tvCatTransport" android:layout_width="72dp" android:layout_height="wrap_content"
+                                android:text="0" android:textColor="#2196F3" android:textSize="13sp" android:textStyle="bold" android:gravity="end"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <TextView android:layout_width="24dp" android:layout_height="wrap_content" android:text="S" android:textSize="14sp"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                                android:text="Shopping" android:textColor="#424242" android:textSize="13sp" android:layout_marginStart="8dp"/>
+                            <ProgressBar android:id="@+id/progressCatShopping" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="80dp" android:layout_height="6dp" android:progress="0"
+                                android:progressTint="#E91E63" android:trackTint="#FCE4EC" android:layout_marginEnd="8dp"/>
+                            <TextView android:id="@+id/tvCatShopping" android:layout_width="72dp" android:layout_height="wrap_content"
+                                android:text="0" android:textColor="#E91E63" android:textSize="13sp" android:textStyle="bold" android:gravity="end"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <TextView android:layout_width="24dp" android:layout_height="wrap_content" android:text="B" android:textSize="14sp"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                                android:text="Bills and Utilities" android:textColor="#424242" android:textSize="13sp" android:layout_marginStart="8dp"/>
+                            <ProgressBar android:id="@+id/progressCatBills" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="80dp" android:layout_height="6dp" android:progress="0"
+                                android:progressTint="#F44336" android:trackTint="#FFEBEE" android:layout_marginEnd="8dp"/>
+                            <TextView android:id="@+id/tvCatBills" android:layout_width="72dp" android:layout_height="wrap_content"
+                                android:text="0" android:textColor="#F44336" android:textSize="13sp" android:textStyle="bold" android:gravity="end"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <TextView android:layout_width="24dp" android:layout_height="wrap_content" android:text="E" android:textSize="14sp"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                                android:text="Entertainment" android:textColor="#424242" android:textSize="13sp" android:layout_marginStart="8dp"/>
+                            <ProgressBar android:id="@+id/progressCatEntertainment" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="80dp" android:layout_height="6dp" android:progress="0"
+                                android:progressTint="#9C27B0" android:trackTint="#F3E5F5" android:layout_marginEnd="8dp"/>
+                            <TextView android:id="@+id/tvCatEntertainment" android:layout_width="72dp" android:layout_height="wrap_content"
+                                android:text="0" android:textColor="#9C27B0" android:textSize="13sp" android:textStyle="bold" android:gravity="end"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <TextView android:layout_width="24dp" android:layout_height="wrap_content" android:text="H" android:textSize="14sp"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                                android:text="Healthcare" android:textColor="#424242" android:textSize="13sp" android:layout_marginStart="8dp"/>
+                            <ProgressBar android:id="@+id/progressCatHealth" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="80dp" android:layout_height="6dp" android:progress="0"
+                                android:progressTint="#4CAF50" android:trackTint="#E8F5E9" android:layout_marginEnd="8dp"/>
+                            <TextView android:id="@+id/tvCatHealth" android:layout_width="72dp" android:layout_height="wrap_content"
+                                android:text="0" android:textColor="#4CAF50" android:textSize="13sp" android:textStyle="bold" android:gravity="end"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="10dp">
+                            <TextView android:layout_width="24dp" android:layout_height="wrap_content" android:text="Tr" android:textSize="14sp"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                                android:text="Travel" android:textColor="#424242" android:textSize="13sp" android:layout_marginStart="8dp"/>
+                            <ProgressBar android:id="@+id/progressCatTravel" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="80dp" android:layout_height="6dp" android:progress="0"
+                                android:progressTint="#00BCD4" android:trackTint="#E0F7FA" android:layout_marginEnd="8dp"/>
+                            <TextView android:id="@+id/tvCatTravel" android:layout_width="72dp" android:layout_height="wrap_content"
+                                android:text="0" android:textColor="#00BCD4" android:textSize="13sp" android:textStyle="bold" android:gravity="end"/>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:orientation="horizontal" android:gravity="center_vertical">
+                            <TextView android:layout_width="24dp" android:layout_height="wrap_content" android:text="O" android:textSize="14sp"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                                android:text="Other" android:textColor="#424242" android:textSize="13sp" android:layout_marginStart="8dp"/>
+                            <ProgressBar android:id="@+id/progressCatOther" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                                android:layout_width="80dp" android:layout_height="6dp" android:progress="0"
+                                android:progressTint="#607D8B" android:trackTint="#ECEFF1" android:layout_marginEnd="8dp"/>
+                            <TextView android:id="@+id/tvCatOther" android:layout_width="72dp" android:layout_height="wrap_content"
+                                android:text="0" android:textColor="#607D8B" android:textSize="13sp" android:textStyle="bold" android:gravity="end"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Monthly Bar Chart -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" app:cardCornerRadius="16dp"
+                app:cardElevation="3dp" app:cardBackgroundColor="#FFFFFF">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="20dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Monthly Expenses" android:textColor="#1A1F36"
+                        android:textSize="16sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Last 6 months" android:textColor="#9E9E9E"
+                        android:textSize="12sp" android:layout_marginBottom="12dp"/>
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/barChartMonthly"
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Weekly Line Chart -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" app:cardCornerRadius="16dp"
+                app:cardElevation="3dp" app:cardBackgroundColor="#FFFFFF">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="20dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Weekly Spending" android:textColor="#1A1F36"
+                        android:textSize="16sp" android:textStyle="bold"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="This week, day by day" android:textColor="#9E9E9E"
+                        android:textSize="12sp" android:layout_marginBottom="12dp"/>
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/lineChartWeekly"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Savings Rate -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" app:cardCornerRadius="16dp"
+                app:cardElevation="3dp" app:cardBackgroundColor="#FFFFFF">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="20dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Savings Rate" android:textColor="#1A1F36"
+                        android:textSize="16sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>
+                    <ProgressBar android:id="@+id/progressSavingsRate"
+                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                        android:layout_width="match_parent" android:layout_height="14dp"
+                        android:progress="0" android:progressTint="#4527A0" android:trackTint="#EDE7F6"
+                        android:layout_marginBottom="8dp"/>
+                    <TextView android:id="@+id/tvSavingsRateLabel" android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:text="0% of income saved"
+                        android:textColor="#7C8DB0" android:textSize="13sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Transaction counts -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" app:cardCornerRadius="16dp"
+                app:cardElevation="3dp" app:cardBackgroundColor="#FFFFFF">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:padding="20dp">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                        <TextView android:id="@+id/tvTotalTransactions" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="0" android:textColor="#1A1F36"
+                            android:textSize="28sp" android:textStyle="bold"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Total" android:textColor="#9E9E9E" android:textSize="12sp"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                        <TextView android:id="@+id/tvIncomeCount" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="0" android:textColor="#4CAF50"
+                            android:textSize="28sp" android:textStyle="bold"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Income" android:textColor="#9E9E9E" android:textSize="12sp"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                        <TextView android:id="@+id/tvExpenseCount" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="0" android:textColor="#F44336"
+                            android:textSize="28sp" android:textStyle="bold"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Expense" android:textColor="#9E9E9E" android:textSize="12sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewAllTransactions"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="View All Transactions"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#4527A0"
+                android:layout_marginBottom="40dp"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                app:cornerRadius="14dp"
+                app:strokeColor="#4527A0"
+                app:strokeWidth="2dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

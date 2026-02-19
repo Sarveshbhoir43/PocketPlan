@@ -40,6 +40,14 @@
         <activity
             android:name=".AddTransactionActivity"
             android:exported="false" />
+        <activity
+            android:name=".BudgetActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ReportsActivity"
+            android:exported="false" />
 
 
 
