@@ -29,6 +29,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 
+import com.example.pocketplan.notifications.LowBalanceChecker;
+import com.example.pocketplan.notifications.WeeklyScheduler;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -200,6 +203,11 @@ public class ProfileActivity extends AppCompatActivity {
         // Notifications Switch
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.edit().putBoolean("notifications_enabled", isChecked).apply();
+            if (isChecked) {
+                WeeklyScheduler.schedule(this);
+            } else {
+                WeeklyScheduler.cancel(this);
+            }
             Toast.makeText(this, isChecked ? "Notifications enabled" : "Notifications disabled",
                     Toast.LENGTH_SHORT).show();
         });

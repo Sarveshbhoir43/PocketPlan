@@ -23,6 +23,11 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 
+import com.example.pocketplan.notifications.BudgetNotificationChecker;
+import com.example.pocketplan.notifications.LowBalanceChecker;
+import com.example.pocketplan.notifications.NotificationHelper;
+import com.example.pocketplan.notifications.WeeklyScheduler;
+
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -52,6 +57,10 @@ public class DashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
 
         databaseHelper = new DatabaseHelper(this);
+
+        // Initialize notification channels & schedule weekly summary
+        NotificationHelper.createChannels(this);
+        WeeklyScheduler.schedule(this);
 
         initializeViews();
         setupGreeting();
@@ -180,6 +189,7 @@ public class DashboardActivity extends AppCompatActivity {
                     if (success) {
                         Toast.makeText(this, "✓ Income added successfully!", Toast.LENGTH_SHORT).show();
                         loadBalance();
+                        LowBalanceChecker.check(this);
                         bottomSheetDialog.dismiss();
                     } else {
                         Toast.makeText(this, "Failed to add income", Toast.LENGTH_SHORT).show();

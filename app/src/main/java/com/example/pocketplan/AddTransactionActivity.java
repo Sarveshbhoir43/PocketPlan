@@ -15,6 +15,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import com.example.pocketplan.notifications.BudgetNotificationChecker;
+import com.example.pocketplan.notifications.LowBalanceChecker;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -181,6 +184,10 @@ public class AddTransactionActivity extends AppCompatActivity {
             if (result != -1) {
                 Log.d(TAG, "Expense saved successfully with ID: " + result);
                 Toast.makeText(this, "✓ Expense Saved Successfully", Toast.LENGTH_SHORT).show();
+
+                // Check budget and low balance notifications instantly
+                BudgetNotificationChecker.checkAllCategories(this);
+                LowBalanceChecker.check(this);
 
                 Intent intent = new Intent();
                 intent.putExtra("success", true);

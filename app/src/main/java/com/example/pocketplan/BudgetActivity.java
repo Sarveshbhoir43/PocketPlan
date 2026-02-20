@@ -12,6 +12,8 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.textfield.TextInputEditText;
 
+import com.example.pocketplan.notifications.BudgetNotificationChecker;
+
 import java.util.Locale;
 
 public class BudgetActivity extends AppCompatActivity {
@@ -133,7 +135,7 @@ public class BudgetActivity extends AppCompatActivity {
     }
 
     private void updateCategoryUI(TextView tvSpent, ProgressBar progress,
-                                   double spent, float budget) {
+                                  double spent, float budget) {
         tvSpent.setText(String.format(Locale.getDefault(), "Spent: ₹%.0f", spent));
 
         if (budget > 0) {
@@ -147,21 +149,21 @@ public class BudgetActivity extends AppCompatActivity {
     private void updateSummary() {
         float totalBudget =
                 budgetPrefs.getFloat("budget_food", 0) +
-                budgetPrefs.getFloat("budget_transport", 0) +
-                budgetPrefs.getFloat("budget_shopping", 0) +
-                budgetPrefs.getFloat("budget_bills", 0) +
-                budgetPrefs.getFloat("budget_entertainment", 0) +
-                budgetPrefs.getFloat("budget_other", 0);
+                        budgetPrefs.getFloat("budget_transport", 0) +
+                        budgetPrefs.getFloat("budget_shopping", 0) +
+                        budgetPrefs.getFloat("budget_bills", 0) +
+                        budgetPrefs.getFloat("budget_entertainment", 0) +
+                        budgetPrefs.getFloat("budget_other", 0);
 
         double totalSpent = 0;
         try {
             totalSpent =
                     databaseHelper.getExpenseByCategory("Food & Dining") +
-                    databaseHelper.getExpenseByCategory("Transportation") +
-                    databaseHelper.getExpenseByCategory("Shopping") +
-                    databaseHelper.getExpenseByCategory("Bills & Utilities") +
-                    databaseHelper.getExpenseByCategory("Entertainment") +
-                    databaseHelper.getExpenseByCategory("Other");
+                            databaseHelper.getExpenseByCategory("Transportation") +
+                            databaseHelper.getExpenseByCategory("Shopping") +
+                            databaseHelper.getExpenseByCategory("Bills & Utilities") +
+                            databaseHelper.getExpenseByCategory("Entertainment") +
+                            databaseHelper.getExpenseByCategory("Other");
         } catch (Exception e) {
             Log.e(TAG, "Error computing total spent: " + e.getMessage(), e);
         }
@@ -186,6 +188,10 @@ public class BudgetActivity extends AppCompatActivity {
         editor.apply();
 
         Toast.makeText(this, "✓ Budgets saved successfully!", Toast.LENGTH_SHORT).show();
+
+        // Reset alerts so they can re-trigger if spending still exceeds new budgets
+        BudgetNotificationChecker.resetAlerts(this);
+        BudgetNotificationChecker.checkAllCategories(this);
 
         // Refresh UI after save
         loadSpentAmounts();
