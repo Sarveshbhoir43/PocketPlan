@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.example.pocketplan.DatabaseHelper;
+import utils.SessionManager;
 import com.example.pocketplan.models.Transaction;
 
 import java.util.HashMap;
@@ -25,6 +26,8 @@ public class WeeklySummaryReceiver extends BroadcastReceiver {
         Log.d(TAG, "Weekly summary alarm triggered");
 
         DatabaseHelper db = new DatabaseHelper(context);
+        int _uid = new SessionManager(context).getUserId();
+        if (_uid == -1) return; // No user logged in
 
         // Time window: last 7 days
         long now       = System.currentTimeMillis();
@@ -34,7 +37,7 @@ public class WeeklySummaryReceiver extends BroadcastReceiver {
         double weeklyIncome  = 0;
         Map<String, Double> categoryTotals = new HashMap<>();
 
-        List<Transaction> transactions = db.getAllTransactions();
+        List<Transaction> transactions = db.getAllTransactions(_uid);
         for (Transaction t : transactions) {
             if (t.getTimestamp() < weekStart) continue;
             if (t.isIncome()) {

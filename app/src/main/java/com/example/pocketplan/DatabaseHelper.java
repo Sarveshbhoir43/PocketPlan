@@ -16,23 +16,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "pocketplan.db";
-    private static final int DATABASE_VERSION = 2; // Increased for salary table
+    private static final int DATABASE_VERSION = 3; // Bumped for user_id migration
+
+    // Users Table
+    public static final String TABLE_USERS    = "users";
+    public static final String COL_USER_ID    = "id";
+    public static final String COL_USER_NAME  = "name";
+    public static final String COL_USER_EMAIL = "email";
+    public static final String COL_USER_PASS  = "password";
 
     // Transactions Table
     public static final String TABLE_TRANSACTIONS = "transactions";
-    public static final String COL_ID = "id";
-    public static final String COL_TITLE = "title";
-    public static final String COL_CATEGORY = "category";
-    public static final String COL_AMOUNT = "amount";
-    public static final String COL_NOTE = "note";
-    public static final String COL_TYPE = "type"; // INCOME or EXPENSE
+    public static final String COL_ID        = "id";
+    public static final String COL_TITLE     = "title";
+    public static final String COL_CATEGORY  = "category";
+    public static final String COL_AMOUNT    = "amount";
+    public static final String COL_NOTE      = "note";
+    public static final String COL_TYPE      = "type";
     public static final String COL_TIMESTAMP = "timestamp";
+    public static final String COL_USER_FK   = "user_id";
 
-    // Salary Table
-    private static final String TABLE_SALARY = "salary";
-    private static final String COL_SALARY_ID = "id";
-    private static final String COL_SALARY_AMOUNT = "amount";
-    private static final String COL_SALARY_UPDATED = "updated_at";
+    private static final String TABLE_SALARY   = "salary";
     private static final String TABLE_SETTINGS = "settings";
 
     public DatabaseHelper(Context context) {
@@ -41,362 +45,282 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create Transactions Table
-        String createTransactionsTable = "CREATE TABLE " + TABLE_TRANSACTIONS + " (" +
-                COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_TITLE + " TEXT NOT NULL, " +
-                COL_CATEGORY + " TEXT NOT NULL, " +
-                COL_AMOUNT + " REAL NOT NULL, " +
-                COL_NOTE + " TEXT, " +
-                COL_TYPE + " TEXT NOT NULL, " +
-                COL_TIMESTAMP + " INTEGER NOT NULL)";
-        db.execSQL(createTransactionsTable);
+        db.execSQL("CREATE TABLE " + TABLE_USERS + " (" +
+                COL_USER_ID    + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_USER_NAME  + " TEXT NOT NULL, " +
+                COL_USER_EMAIL + " TEXT UNIQUE NOT NULL, " +
+                COL_USER_PASS  + " TEXT NOT NULL)");
 
-        // Create Salary Table
-        String createSalaryTable = "CREATE TABLE " + TABLE_SALARY + " (" +
-                COL_SALARY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_SALARY_AMOUNT + " REAL DEFAULT 0, " +
-                COL_SALARY_UPDATED + " INTEGER)";
-        db.execSQL(createSalaryTable);
+        db.execSQL("CREATE TABLE " + TABLE_TRANSACTIONS + " (" +
+                COL_ID        + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_TITLE     + " TEXT NOT NULL, " +
+                COL_CATEGORY  + " TEXT NOT NULL, " +
+                COL_AMOUNT    + " REAL NOT NULL, " +
+                COL_NOTE      + " TEXT, " +
+                COL_TYPE      + " TEXT NOT NULL, " +
+                COL_TIMESTAMP + " INTEGER NOT NULL, " +
+                COL_USER_FK   + " INTEGER NOT NULL, " +
+                "FOREIGN KEY(" + COL_USER_FK + ") REFERENCES " + TABLE_USERS + "(" + COL_USER_ID + "))");
 
-        // Insert default salary row
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SALARY + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, amount REAL DEFAULT 0, updated_at INTEGER)");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SETTINGS + " (" +
+                "key TEXT, value REAL, user_id INTEGER)");
+
         db.execSQL("INSERT INTO " + TABLE_SALARY + " (amount, updated_at) VALUES (0, " + System.currentTimeMillis() + ")");
-
-        Log.d(TAG, "Database created successfully");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 2) {
-            // Add salary table if upgrading from version 1
-            String createSalaryTable = "CREATE TABLE IF NOT EXISTS " + TABLE_SALARY + " (" +
-                    COL_SALARY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COL_SALARY_AMOUNT + " REAL DEFAULT 0, " +
-                    COL_SALARY_UPDATED + " INTEGER)";
-            db.execSQL(createSalaryTable);
-            db.execSQL("INSERT INTO " + TABLE_SALARY + " (amount, updated_at) VALUES (0, " + System.currentTimeMillis() + ")");
-        }
-    }
+        if (oldVersion < 3) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_USERS + " (" +
+                    COL_USER_ID    + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COL_USER_NAME  + " TEXT NOT NULL, " +
+                    COL_USER_EMAIL + " TEXT UNIQUE NOT NULL, " +
+                    COL_USER_PASS  + " TEXT NOT NULL)");
 
-    // ==================== TRANSACTION METHODS ====================
+            // Seed a legacy user so existing transactions (user_id=1) still link correctly
+            db.execSQL("INSERT OR IGNORE INTO " + TABLE_USERS +
+                    " (id, name, email, password) VALUES (1, 'User', 'legacy@pocketplan.app', 'legacy')");
 
-    public List<com.example.pocketplan.models.Transaction> getAllTransactions() {
-        List<com.example.pocketplan.models.Transaction> transactions = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        try {
-            Cursor cursor = db.rawQuery(
-                    "SELECT * FROM " + TABLE_TRANSACTIONS +
-                            " ORDER BY " + COL_TIMESTAMP + " DESC", null);
-            if (cursor.moveToFirst()) {
-                do {
-                    com.example.pocketplan.models.Transaction t =
-                            new com.example.pocketplan.models.Transaction(
-                                    cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(COL_CATEGORY)),
-                                    cursor.getDouble(cursor.getColumnIndexOrThrow(COL_AMOUNT)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(COL_NOTE)),
-                                    cursor.getString(cursor.getColumnIndexOrThrow(COL_TYPE)),
-                                    cursor.getLong(cursor.getColumnIndexOrThrow(COL_TIMESTAMP))
-                            );
-                    transactions.add(t);
-                } while (cursor.moveToNext());
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_TRANSACTIONS +
+                        " ADD COLUMN " + COL_USER_FK + " INTEGER NOT NULL DEFAULT 1");
+            } catch (Exception e) {
+                Log.w(TAG, "user_id column may already exist");
             }
-            cursor.close();
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getAllTransactions: " + e.getMessage(), e);
+
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SETTINGS +
+                    " (key TEXT, value REAL, user_id INTEGER)");
         }
-        return transactions;
     }
 
+    // ═══ USER METHODS ═══════════════════════════════════════════════════════
 
+    public long registerUser(String name, String email, String password) {
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_USER_NAME,  name);
+            cv.put(COL_USER_EMAIL, email.toLowerCase().trim());
+            cv.put(COL_USER_PASS,  password);
+            return getWritableDatabase().insert(TABLE_USERS, null, cv);
+        } catch (Exception e) {
+            Log.e(TAG, "registerUser: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    public int loginUser(String email, String password) {
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery(
+                    "SELECT " + COL_USER_ID + " FROM " + TABLE_USERS +
+                            " WHERE " + COL_USER_EMAIL + " = ? AND " + COL_USER_PASS + " = ?",
+                    new String[]{email.toLowerCase().trim(), password});
+            if (c.moveToFirst()) return c.getInt(0);
+        } catch (Exception e) {
+            Log.e(TAG, "loginUser: " + e.getMessage());
+        } finally {
+            if (c != null) c.close();
+        }
+        return -1;
+    }
+
+    public boolean isEmailTaken(String email) {
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery(
+                    "SELECT 1 FROM " + TABLE_USERS + " WHERE " + COL_USER_EMAIL + " = ?",
+                    new String[]{email.toLowerCase().trim()});
+            return c.moveToFirst();
+        } catch (Exception e) {
+            return false;
+        } finally {
+            if (c != null) c.close();
+        }
+    }
+
+    public String getUserName(int userId) {
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery(
+                    "SELECT " + COL_USER_NAME + " FROM " + TABLE_USERS +
+                            " WHERE " + COL_USER_ID + " = ?",
+                    new String[]{String.valueOf(userId)});
+            if (c.moveToFirst()) return c.getString(0);
+        } catch (Exception e) {
+            Log.e(TAG, "getUserName: " + e.getMessage());
+        } finally {
+            if (c != null) c.close();
+        }
+        return "User";
+    }
+
+    // ═══ TRANSACTION METHODS — scoped to userId ══════════════════════════════
+
+    public List<Transaction> getAllTransactions(int userId) {
+        List<Transaction> list = new ArrayList<>();
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery(
+                    "SELECT * FROM " + TABLE_TRANSACTIONS +
+                            " WHERE " + COL_USER_FK + " = ?" +
+                            " ORDER BY " + COL_TIMESTAMP + " DESC",
+                    new String[]{String.valueOf(userId)});
+            if (c.moveToFirst()) {
+                do {
+                    list.add(new Transaction(
+                            c.getInt(c.getColumnIndexOrThrow(COL_ID)),
+                            c.getString(c.getColumnIndexOrThrow(COL_TITLE)),
+                            c.getString(c.getColumnIndexOrThrow(COL_CATEGORY)),
+                            c.getDouble(c.getColumnIndexOrThrow(COL_AMOUNT)),
+                            c.getString(c.getColumnIndexOrThrow(COL_NOTE)),
+                            c.getString(c.getColumnIndexOrThrow(COL_TYPE)),
+                            c.getLong(c.getColumnIndexOrThrow(COL_TIMESTAMP))
+                    ));
+                } while (c.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "getAllTransactions: " + e.getMessage());
+        } finally {
+            if (c != null) c.close();
+        }
+        return list;
+    }
+
+    public long addTransaction(String title, String category, double amount,
+                               String note, String type, long timestamp, int userId) {
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put(COL_TITLE,     title);
+            cv.put(COL_CATEGORY,  category);
+            cv.put(COL_AMOUNT,    amount);
+            cv.put(COL_NOTE,      note);
+            cv.put(COL_TYPE,      type);
+            cv.put(COL_TIMESTAMP, timestamp);
+            cv.put(COL_USER_FK,   userId);
+            return getWritableDatabase().insert(TABLE_TRANSACTIONS, null, cv);
+        } catch (Exception e) {
+            Log.e(TAG, "addTransaction: " + e.getMessage());
+            return -1;
+        }
+    }
 
     public boolean deleteTransaction(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        int rowsDeleted = db.delete(TABLE_TRANSACTIONS, COL_ID + " = ?", new String[]{String.valueOf(id)});
-        Log.d(TAG, "Deleted transaction ID " + id + ", rows affected: " + rowsDeleted);
-        return rowsDeleted > 0;
+        return getWritableDatabase().delete(TABLE_TRANSACTIONS,
+                COL_ID + " = ?", new String[]{String.valueOf(id)}) > 0;
     }
 
-    // ==================== SALARY METHODS ====================
-    
-    public long addTransaction(String title, String category, double amount,
-                               String note, String type, long timestamp) {
-        SQLiteDatabase db = null;
-        long result = -1;
-
-        try {
-            db = this.getWritableDatabase();
-
-            ContentValues values = new ContentValues();
-            values.put("title", title);
-            values.put("category", category);
-            values.put("amount", amount);
-            values.put("note", note);
-            values.put("type", type);
-            values.put("timestamp", timestamp);
-
-            result = db.insert(TABLE_TRANSACTIONS, null, values);
-
-            Log.d("DatabaseHelper", "Transaction added with ID: " + result);
-
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error adding transaction: " + e.getMessage(), e);
-        } finally {
-            if (db != null && db.isOpen()) {
-                db.close();
-            }
-        }
-
-        return result;
+    public double getTotalIncome(int userId) {
+        return sumByType("INCOME", userId);
     }
 
-    /**
-     * Get total income from all INCOME transactions
-     * @return Total income amount
-     */
-    public double getTotalIncome() {
-        SQLiteDatabase db = null;
-        Cursor cursor = null;
-        double totalIncome = 0;
-
-        try {
-            db = this.getReadableDatabase();
-
-            String query = "SELECT SUM(amount) as total FROM " + TABLE_TRANSACTIONS +
-                    " WHERE type = 'INCOME'";
-
-            cursor = db.rawQuery(query, null);
-
-            if (cursor != null && cursor.moveToFirst()) {
-                totalIncome = cursor.getDouble(0);
-            }
-
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getting total income: " + e.getMessage(), e);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-            if (db != null && db.isOpen()) {
-                db.close();
-            }
-        }
-
-        return totalIncome;
+    public double getTotalExpense(int userId) {
+        return sumByType("EXPENSE", userId);
     }
 
-    /**
-     * Get total expense from all EXPENSE transactions
-     * @return Total expense amount
-     */
-    public double getTotalExpense() {
-        SQLiteDatabase db = null;
-        Cursor cursor = null;
-        double totalExpense = 0;
-
+    private double sumByType(String type, int userId) {
+        Cursor c = null;
         try {
-            db = this.getReadableDatabase();
-
-            String query = "SELECT SUM(amount) as total FROM " + TABLE_TRANSACTIONS +
-                    " WHERE type = 'EXPENSE'";
-
-            cursor = db.rawQuery(query, null);
-
-            if (cursor != null && cursor.moveToFirst()) {
-                totalExpense = cursor.getDouble(0);
-            }
-
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getting total expense: " + e.getMessage(), e);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-            if (db != null && db.isOpen()) {
-                db.close();
-            }
-        }
-
-        return totalExpense;
-    }
-
-    /**
-     * Clear all transactions from the database
-     * @return true if successful, false otherwise
-     */
-    public boolean clearAllTransactions() {
-        SQLiteDatabase db = null;
-        try {
-            db = this.getWritableDatabase();
-
-            // Delete all rows from transactions table
-            int rowsDeleted = db.delete(TABLE_TRANSACTIONS, null, null);
-
-            Log.d("DatabaseHelper", "Cleared " + rowsDeleted + " transactions");
-            return true;
-
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error clearing transactions: " + e.getMessage(), e);
-            return false;
-        } finally {
-            if (db != null && db.isOpen()) {
-                db.close();
-            }
-        }
-    }
-
-    public double getSalary() {
-        SQLiteDatabase db = null;
-        Cursor cursor = null;
-        double salary = 0;
-
-        try {
-            db = this.getReadableDatabase();
-
-            String query = "SELECT value FROM " + TABLE_SETTINGS +
-                    " WHERE key = 'salary'";
-
-            cursor = db.rawQuery(query, null);
-
-            if (cursor != null && cursor.moveToFirst()) {
-                salary = cursor.getDouble(0);
-            }
-
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getting salary: " + e.getMessage(), e);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-            if (db != null && db.isOpen()) {
-                db.close();
-            }
-        }
-
-        return salary;
-    }
-
-    /**
-     * Set/Update salary in settings table
-     * @param salary Salary amount to set
-     * @return true if successful, false otherwise
-     */
-    public boolean setSalary(double salary) {
-        SQLiteDatabase db = null;
-
-        try {
-            db = this.getWritableDatabase();
-
-            ContentValues values = new ContentValues();
-            values.put("key", "salary");
-            values.put("value", salary);
-
-            // Try to update first
-            int rowsUpdated = db.update(TABLE_SETTINGS, values, "key = ?",
-                    new String[]{"salary"});
-
-            // If no rows updated, insert new
-            if (rowsUpdated == 0) {
-                db.insert(TABLE_SETTINGS, null, values);
-            }
-
-            Log.d("DatabaseHelper", "Salary set to: " + salary);
-            return true;
-
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error setting salary: " + e.getMessage(), e);
-            return false;
-        } finally {
-            if (db != null && db.isOpen()) {
-                db.close();
-            }
-        }
-    }
-
-    // ADD THESE METHODS TO YOUR DatabaseHelper.java if they don't already exist:
-
-    // ─── Get expense total for a specific category ───────────────────────────────
-    public double getExpenseByCategory(String category) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        double total = 0;
-        try {
-            Cursor cursor = db.rawQuery(
+            c = getReadableDatabase().rawQuery(
                     "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
-                            " WHERE " + COL_TYPE + " = 'EXPENSE' AND " + COL_CATEGORY + " = ?",
-                    new String[]{category});
-            if (cursor.moveToFirst() && !cursor.isNull(0)) {
-                total = cursor.getDouble(0);
-            }
-            cursor.close();
+                            " WHERE " + COL_TYPE + " = ? AND " + COL_USER_FK + " = ?",
+                    new String[]{type, String.valueOf(userId)});
+            if (c.moveToFirst()) return c.getDouble(0);
         } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getExpenseByCategory: " + e.getMessage(), e);
+            Log.e(TAG, "sumByType: " + e.getMessage());
+        } finally {
+            if (c != null) c.close();
         }
-        return total;
+        return 0;
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-//  ADD ALL OF THESE METHODS TO DatabaseHelper.java
-//  (Only add methods you don't already have)
-// ══════════════════════════════════════════════════════════════════════
-
-    // ─── 1. Get expense total for a specific category ────────────────────
-
-
-    // ─── 2. Get expense total for a specific month/year ──────────────────
-//  year  = e.g. 2025
-//  month = 0-based (Calendar.JANUARY = 0, Calendar.DECEMBER = 11)
-    public double getMonthlyExpense(int year, int month) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        double total = 0;
+    public boolean clearAllTransactions(int userId) {
         try {
-            java.util.Calendar start = java.util.Calendar.getInstance();
-            start.set(year, month, 1, 0, 0, 0);
-            start.set(java.util.Calendar.MILLISECOND, 0);
+            getWritableDatabase().delete(TABLE_TRANSACTIONS,
+                    COL_USER_FK + " = ?", new String[]{String.valueOf(userId)});
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "clearAllTransactions: " + e.getMessage());
+            return false;
+        }
+    }
 
-            java.util.Calendar end = (java.util.Calendar) start.clone();
-            end.add(java.util.Calendar.MONTH, 1);
+    public double getExpenseByCategory(String category, int userId) {
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery(
+                    "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
+                            " WHERE " + COL_TYPE + " = 'EXPENSE' AND " + COL_CATEGORY + " = ?" +
+                            " AND " + COL_USER_FK + " = ?",
+                    new String[]{category, String.valueOf(userId)});
+            if (c.moveToFirst() && !c.isNull(0)) return c.getDouble(0);
+        } catch (Exception e) {
+            Log.e(TAG, "getExpenseByCategory: " + e.getMessage());
+        } finally {
+            if (c != null) c.close();
+        }
+        return 0;
+    }
 
-            Cursor cursor = db.rawQuery(
+    public double getMonthlyExpense(int year, int month, int userId) {
+        java.util.Calendar s = java.util.Calendar.getInstance();
+        s.set(year, month, 1, 0, 0, 0); s.set(java.util.Calendar.MILLISECOND, 0);
+        java.util.Calendar e = (java.util.Calendar) s.clone();
+        e.add(java.util.Calendar.MONTH, 1);
+        return getExpenseForRange(s.getTimeInMillis(), e.getTimeInMillis(), userId);
+    }
+
+    public double getExpenseForRange(long startTime, long endTime, int userId) {
+        Cursor c = null;
+        try {
+            c = getReadableDatabase().rawQuery(
                     "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
                             " WHERE " + COL_TYPE + " = 'EXPENSE'" +
-                            " AND " + COL_TIMESTAMP + " >= ?" +
-                            " AND " + COL_TIMESTAMP + " < ?",
-                    new String[]{
-                            String.valueOf(start.getTimeInMillis()),
-                            String.valueOf(end.getTimeInMillis())
-                    });
-            if (cursor.moveToFirst() && !cursor.isNull(0)) {
-                total = cursor.getDouble(0);
-            }
-            cursor.close();
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getMonthlyExpense: " + e.getMessage(), e);
+                            " AND " + COL_TIMESTAMP + " >= ? AND " + COL_TIMESTAMP + " < ?" +
+                            " AND " + COL_USER_FK + " = ?",
+                    new String[]{String.valueOf(startTime), String.valueOf(endTime), String.valueOf(userId)});
+            if (c.moveToFirst() && !c.isNull(0)) return c.getDouble(0);
+        } catch (Exception ex) {
+            Log.e(TAG, "getExpenseForRange: " + ex.getMessage());
+        } finally {
+            if (c != null) c.close();
         }
-        return total;
+        return 0;
     }
-    public double getExpenseForRange(long startTime, long endTime) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        double total = 0;
+
+    // ═══ SALARY / SETTINGS — scoped to user ══════════════════════════════════
+
+    public double getSalary(int userId) {
+        Cursor c = null;
         try {
-            Cursor cursor = db.rawQuery(
-                    "SELECT SUM(" + COL_AMOUNT + ") FROM " + TABLE_TRANSACTIONS +
-                            " WHERE " + COL_TYPE + " = 'EXPENSE'" +
-                            " AND " + COL_TIMESTAMP + " >= ?" +
-                            " AND " + COL_TIMESTAMP + " < ?",
-                    new String[]{
-                            String.valueOf(startTime),
-                            String.valueOf(endTime)
-                    });
-            if (cursor.moveToFirst() && !cursor.isNull(0)) {
-                total = cursor.getDouble(0);
-            }
-            cursor.close();
+            c = getReadableDatabase().rawQuery(
+                    "SELECT value FROM " + TABLE_SETTINGS +
+                            " WHERE key = 'salary' AND user_id = ?",
+                    new String[]{String.valueOf(userId)});
+            if (c.moveToFirst()) return c.getDouble(0);
         } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getExpenseForRange: " + e.getMessage(), e);
+            Log.e(TAG, "getSalary: " + e.getMessage());
+        } finally {
+            if (c != null) c.close();
         }
-        return total;
+        return 0;
     }
 
-
+    public boolean setSalary(double salary, int userId) {
+        try {
+            ContentValues cv = new ContentValues();
+            cv.put("key",     "salary");
+            cv.put("value",   salary);
+            cv.put("user_id", userId);
+            int updated = getWritableDatabase().update(TABLE_SETTINGS, cv,
+                    "key = 'salary' AND user_id = ?", new String[]{String.valueOf(userId)});
+            if (updated == 0) getWritableDatabase().insert(TABLE_SETTINGS, null, cv);
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "setSalary: " + e.getMessage());
+            return false;
+        }
+    }
 }

@@ -35,10 +35,14 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import utils.SessionManager;
+
 public class ReportsActivity extends AppCompatActivity {
 
     private static final String TAG = "ReportsActivity";
     private DatabaseHelper databaseHelper;
+    private SessionManager sessionManager;
+    private int currentUserId;
 
     private TextView tvReportIncome, tvReportExpense, tvReportSavings;
     private PieChart pieChart, categoryPieChart;
@@ -58,6 +62,13 @@ public class ReportsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reports);
+        sessionManager = new SessionManager(this);
+        if (!sessionManager.isLoggedIn()) {
+            startActivity(new android.content.Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+        currentUserId = sessionManager.getUserId();
         databaseHelper = new DatabaseHelper(this);
         setupToolbar();
         initializeViews();
@@ -113,9 +124,9 @@ public class ReportsActivity extends AppCompatActivity {
 
     private void loadAllData() {
         try {
-            double salary      = databaseHelper.getSalary();
-            double income      = databaseHelper.getTotalIncome();
-            double expense     = databaseHelper.getTotalExpense();
+            double salary      = databaseHelper.getSalary(currentUserId);
+            double income      = databaseHelper.getTotalIncome(currentUserId);
+            double expense     = databaseHelper.getTotalExpense(currentUserId);
             double totalIncome = salary + income;
             double savings     = totalIncome - expense;
 
@@ -132,15 +143,15 @@ public class ReportsActivity extends AppCompatActivity {
                 tvSavingsRateLabel.setText("No income recorded yet");
             }
 
-            double food          = databaseHelper.getExpenseByCategory("Food & Dining");
-            double transport     = databaseHelper.getExpenseByCategory("Transportation");
-            double shopping      = databaseHelper.getExpenseByCategory("Shopping");
-            double bills         = databaseHelper.getExpenseByCategory("Bills & Utilities");
-            double entertainment = databaseHelper.getExpenseByCategory("Entertainment");
-            double health        = databaseHelper.getExpenseByCategory("Healthcare");
-            double travel        = databaseHelper.getExpenseByCategory("Travel");
-            double groceries     = databaseHelper.getExpenseByCategory("Groceries");
-            double other         = databaseHelper.getExpenseByCategory("Other") + groceries;
+            double food          = databaseHelper.getExpenseByCategory("Food & Dining", currentUserId);
+            double transport     = databaseHelper.getExpenseByCategory("Transportation", currentUserId);
+            double shopping      = databaseHelper.getExpenseByCategory("Shopping", currentUserId);
+            double bills         = databaseHelper.getExpenseByCategory("Bills & Utilities", currentUserId);
+            double entertainment = databaseHelper.getExpenseByCategory("Entertainment", currentUserId);
+            double health        = databaseHelper.getExpenseByCategory("Healthcare", currentUserId);
+            double travel        = databaseHelper.getExpenseByCategory("Travel", currentUserId);
+            double groceries     = databaseHelper.getExpenseByCategory("Groceries", currentUserId);
+            double other         = databaseHelper.getExpenseByCategory("Other", currentUserId) + groceries;
 
             double maxCat = Math.max(1, Math.max(food,
                     Math.max(transport, Math.max(shopping,
@@ -156,7 +167,7 @@ public class ReportsActivity extends AppCompatActivity {
             updateCategoryRow(tvCatTravel,        progressCatTravel,        travel,        maxCat);
             updateCategoryRow(tvCatOther,         progressCatOther,         other,         maxCat);
 
-            List<com.example.pocketplan.models.Transaction> all = databaseHelper.getAllTransactions();
+            List<com.example.pocketplan.models.Transaction> all = databaseHelper.getAllTransactions(currentUserId);
             int incomeCount = 0, expenseCount = 0;
             for (com.example.pocketplan.models.Transaction t : all) {
                 if (t.isIncome()) incomeCount++; else expenseCount++;
@@ -260,7 +271,7 @@ public class ReportsActivity extends AppCompatActivity {
             mc.add(Calendar.MONTH, -i);
             int month = mc.get(Calendar.MONTH) + 1;
             int year  = mc.get(Calendar.YEAR);
-            double val = databaseHelper.getMonthlyExpense(month, year);
+            double val = databaseHelper.getMonthlyExpense(month, year, currentUserId);
             entries.add(new BarEntry(5 - i, (float) val));
             monthLabels[5 - i] = monthFmt.format(mc.getTime());
         }
@@ -315,7 +326,7 @@ public class ReportsActivity extends AppCompatActivity {
             long dayStart = cal.getTimeInMillis();
             cal.add(Calendar.DAY_OF_YEAR, 1);
             long dayEnd = cal.getTimeInMillis() - 1;
-            double val = databaseHelper.getExpenseForRange(dayStart, dayEnd);
+            double val = databaseHelper.getExpenseForRange(dayStart, dayEnd, currentUserId);
             entries.add(new Entry(i, (float) val));
         }
 

@@ -1,53 +1,66 @@
 package com.example.pocketplan.notifications;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.example.pocketplan.DatabaseHelper;
 
-/**
- * Call check() after every transaction is saved.
- * Fires a Low Balance notification when balance drops below the user's threshold.
- */
+import utils.SessionManager;
+
 public class LowBalanceChecker {
 
+    private static final String TAG            = "LowBalanceChecker";
     private static final String PREFS_SETTINGS = "NotificationSettings";
     private static final String KEY_THRESHOLD  = "low_balance_threshold";
-    private static final String KEY_ALERTED    = "low_balance_alerted";
+    private static final String KEY_ALERTED    = "low_balance_alerted_";  // per-user suffix
 
-    public static final double DEFAULT_THRESHOLD = 1000.0; // ₹1,000 default
+    public static final double DEFAULT_THRESHOLD = 1000.0;
 
     public static void check(Context context) {
+
+        // Respect user's notification toggle
+        if (!NotificationHelper.areNotificationsEnabled(context)) {
+            Log.d(TAG, "Notifications off — skipping low balance check");
+            return;
+        }
+
+        int userId = new SessionManager(context).getUserId();
+        if (userId == -1) return;
+
         SharedPreferences prefs = context.getSharedPreferences(PREFS_SETTINGS, Context.MODE_PRIVATE);
         double threshold = Double.longBitsToDouble(
                 prefs.getLong(KEY_THRESHOLD, Double.doubleToLongBits(DEFAULT_THRESHOLD)));
 
         DatabaseHelper db = new DatabaseHelper(context);
-        double salary  = db.getSalary();
-        double income  = db.getTotalIncome();
-        double expense = db.getTotalExpense();
+        double salary  = db.getSalary(userId);
+        double income  = db.getTotalIncome(userId);
+        double expense = db.getTotalExpense(userId);
         double balance = salary + income - expense;
         db.close();
 
+        Log.d(TAG, "Balance: " + balance + " | Threshold: " + threshold);
+
+        String alertKey = KEY_ALERTED + userId;
+
         if (balance < threshold) {
-            boolean alreadyAlerted = prefs.getBoolean(KEY_ALERTED, false);
+            boolean alreadyAlerted = prefs.getBoolean(alertKey, false);
             if (!alreadyAlerted) {
+                Log.d(TAG, "Low balance — firing notification");
                 NotificationHelper.showLowBalance(context, balance, threshold);
-                prefs.edit().putBoolean(KEY_ALERTED, true).apply();
+                prefs.edit().putBoolean(alertKey, true).apply();
             }
         } else {
-            // Balance recovered → reset so it can alert again if balance drops
-            prefs.edit().putBoolean(KEY_ALERTED, false).apply();
+            prefs.edit().putBoolean(alertKey, false).apply();
         }
     }
 
-    /** Save user-defined threshold (called from ProfileActivity settings). */
     public static void setThreshold(Context context, double threshold) {
+        int userId = new SessionManager(context).getUserId();
         context.getSharedPreferences(PREFS_SETTINGS, Context.MODE_PRIVATE)
                 .edit()
                 .putLong(KEY_THRESHOLD, Double.doubleToLongBits(threshold))
-                .putBoolean(KEY_ALERTED, false) // reset so it can re-trigger
+                .putBoolean(KEY_ALERTED + userId, false)
                 .apply();
     }
 

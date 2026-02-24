@@ -36,9 +36,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import utils.SessionManager;
+
 public class ProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileActivity";
+
+    private SessionManager sessionManager;
+    private int currentUserId;
 
     // UI Components
     private ImageView ivProfileImage;
@@ -71,6 +76,16 @@ public class ProfileActivity extends AppCompatActivity {
         loadThemePreference();
 
         super.onCreate(savedInstanceState);
+
+        // Auth guard — must be logged in
+        sessionManager = new SessionManager(this);
+        if (!sessionManager.isLoggedIn()) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+        currentUserId = sessionManager.getUserId();
+
         setContentView(R.layout.activity_profile);
 
         initializeViews();
@@ -147,9 +162,10 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserData() {
-        String name = prefs.getString("name", "User");
-        String email = prefs.getString("email", "");
-        String phone = prefs.getString("phone", "");
+        // Load name and email from session (written at login/register time)
+        String name  = sessionManager.getUserName();
+        String email = sessionManager.getUserEmail();
+        String phone = prefs.getString("phone_" + currentUserId, "");
 
         // Set display values
         tvUserName.setText(name);
@@ -161,16 +177,15 @@ public class ProfileActivity extends AppCompatActivity {
         etEmail.setText(email);
         etPhone.setText(phone);
 
-        // Load profile image if exists
         loadProfileImage();
 
-        // Load preferences
-        switchNotifications.setChecked(prefs.getBoolean("notifications_enabled", true));
-        switchBiometric.setChecked(prefs.getBoolean("biometric_enabled", false));
+        switchNotifications.setChecked(prefs.getBoolean("notifications_enabled_" + currentUserId, true));
+        switchBiometric.setChecked(prefs.getBoolean("biometric_enabled_" + currentUserId, false));
     }
 
     private void loadProfileImage() {
-        String imageBase64 = prefs.getString("profile_image", null);
+        // Use per-user key so images don't leak between users
+        String imageBase64 = prefs.getString("profile_image_" + currentUserId, null);
         if (imageBase64 != null) {
             try {
                 byte[] decodedBytes = Base64.decode(imageBase64, Base64.DEFAULT);
@@ -202,19 +217,32 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Notifications Switch
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            prefs.edit().putBoolean("notifications_enabled", isChecked).apply();
             if (isChecked) {
+                // Android 13+ requires runtime permission for POST_NOTIFICATIONS
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                            != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        // Request the permission — result handled in onRequestPermissionsResult
+                        androidx.core.app.ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+                        // Don't save yet — wait for user response
+                        buttonView.setChecked(false); // revert visually until granted
+                        return;
+                    }
+                }
+                prefs.edit().putBoolean("notifications_enabled_" + currentUserId, true).apply();
                 WeeklyScheduler.schedule(this);
+                Toast.makeText(this, "Notifications enabled", Toast.LENGTH_SHORT).show();
             } else {
+                prefs.edit().putBoolean("notifications_enabled_" + currentUserId, false).apply();
                 WeeklyScheduler.cancel(this);
+                Toast.makeText(this, "Notifications disabled", Toast.LENGTH_SHORT).show();
             }
-            Toast.makeText(this, isChecked ? "Notifications enabled" : "Notifications disabled",
-                    Toast.LENGTH_SHORT).show();
         });
 
         // Biometric Switch
         switchBiometric.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            prefs.edit().putBoolean("biometric_enabled", isChecked).apply();
+            prefs.edit().putBoolean("biometric_enabled_" + currentUserId, isChecked).apply();
             Toast.makeText(this, isChecked ? "Biometric login enabled" : "Biometric login disabled",
                     Toast.LENGTH_SHORT).show();
         });
@@ -329,7 +357,7 @@ public class ProfileActivity extends AppCompatActivity {
             byte[] imageBytes = baos.toByteArray();
             String imageBase64 = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 
-            prefs.edit().putString("profile_image", imageBase64).apply();
+            prefs.edit().putString("profile_image_" + currentUserId, imageBase64).apply();
             Log.d(TAG, "Profile image saved successfully");
 
         } catch (Exception e) {
@@ -347,7 +375,7 @@ public class ProfileActivity extends AppCompatActivity {
                     ivProfileImage.setImageResource(R.drawable.ic_profile_placeholder);
 
                     // Remove from SharedPreferences
-                    prefs.edit().remove("profile_image").apply();
+                    prefs.edit().remove("profile_image_" + currentUserId).apply();
 
                     Toast.makeText(this, "Profile photo removed", Toast.LENGTH_SHORT).show();
                 })
@@ -365,11 +393,9 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // Save to SharedPreferences
+        // Save to SharedPreferences with per-user keys for phone (name/email come from session)
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("name", name);
-        editor.putString("email", email);
-        editor.putString("phone", phone);
+        editor.putString("phone_" + currentUserId, phone);
         editor.apply();
 
         // Update display values
@@ -399,15 +425,10 @@ public class ProfileActivity extends AppCompatActivity {
                 .setTitle("Logout")
                 .setMessage("Are you sure you want to logout?")
                 .setPositiveButton("Logout", (dialog, which) -> {
-                    // Clear user session
-                    prefs.edit()
-                            .remove("name")
-                            .remove("email")
-                            .remove("phone")
-                            .remove("profile_image")
-                            .apply();
+                    // Clear session — does NOT delete the user's DB data
+                    sessionManager.logout();
 
-                    // Navigate to Welcome/Register Activity
+                    // Navigate to Welcome screen
                     Intent intent = new Intent(ProfileActivity.this, WelcomeActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
@@ -442,6 +463,29 @@ public class ProfileActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 101) { // POST_NOTIFICATIONS request
+            if (grantResults.length > 0 &&
+                    grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                // User granted permission → enable notifications
+                prefs.edit().putBoolean("notifications_enabled_" + currentUserId, true).apply();
+                switchNotifications.setChecked(true);
+                WeeklyScheduler.schedule(this);
+                Toast.makeText(this, "Notifications enabled", Toast.LENGTH_SHORT).show();
+            } else {
+                // User denied — keep toggle off
+                prefs.edit().putBoolean("notifications_enabled_" + currentUserId, false).apply();
+                switchNotifications.setChecked(false);
+                Toast.makeText(this,
+                        "Permission denied — notifications won't appear",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override

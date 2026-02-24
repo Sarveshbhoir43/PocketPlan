@@ -16,12 +16,16 @@ import com.example.pocketplan.notifications.BudgetNotificationChecker;
 
 import java.util.Locale;
 
+import utils.SessionManager;
+
 public class BudgetActivity extends AppCompatActivity {
 
     private static final String TAG = "BudgetActivity";
     private static final String PREFS_BUDGET = "BudgetPrefs";
 
     private DatabaseHelper databaseHelper;
+    private SessionManager sessionManager;
+    private int currentUserId;
     private SharedPreferences budgetPrefs;
 
     // Summary TextViews
@@ -44,6 +48,13 @@ public class BudgetActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_budget);
 
+        sessionManager = new SessionManager(this);
+        if (!sessionManager.isLoggedIn()) {
+            startActivity(new android.content.Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+        currentUserId = sessionManager.getUserId();
         databaseHelper = new DatabaseHelper(this);
         budgetPrefs = getSharedPreferences(PREFS_BUDGET, MODE_PRIVATE);
 
@@ -109,12 +120,12 @@ public class BudgetActivity extends AppCompatActivity {
 
     private void loadSpentAmounts() {
         try {
-            double food          = databaseHelper.getExpenseByCategory("Food & Dining");
-            double transport     = databaseHelper.getExpenseByCategory("Transportation");
-            double shopping      = databaseHelper.getExpenseByCategory("Shopping");
-            double bills         = databaseHelper.getExpenseByCategory("Bills & Utilities");
-            double entertainment = databaseHelper.getExpenseByCategory("Entertainment");
-            double other         = databaseHelper.getExpenseByCategory("Other");
+            double food          = databaseHelper.getExpenseByCategory("Food & Dining", currentUserId);
+            double transport     = databaseHelper.getExpenseByCategory("Transportation", currentUserId);
+            double shopping      = databaseHelper.getExpenseByCategory("Shopping", currentUserId);
+            double bills         = databaseHelper.getExpenseByCategory("Bills & Utilities", currentUserId);
+            double entertainment = databaseHelper.getExpenseByCategory("Entertainment", currentUserId);
+            double other         = databaseHelper.getExpenseByCategory("Other", currentUserId);
 
             updateCategoryUI(tvSpentFood,          progressFood,          food,
                     budgetPrefs.getFloat("budget_food", 0));
@@ -158,12 +169,12 @@ public class BudgetActivity extends AppCompatActivity {
         double totalSpent = 0;
         try {
             totalSpent =
-                    databaseHelper.getExpenseByCategory("Food & Dining") +
-                            databaseHelper.getExpenseByCategory("Transportation") +
-                            databaseHelper.getExpenseByCategory("Shopping") +
-                            databaseHelper.getExpenseByCategory("Bills & Utilities") +
-                            databaseHelper.getExpenseByCategory("Entertainment") +
-                            databaseHelper.getExpenseByCategory("Other");
+                    databaseHelper.getExpenseByCategory("Food & Dining", currentUserId) +
+                            databaseHelper.getExpenseByCategory("Transportation", currentUserId) +
+                            databaseHelper.getExpenseByCategory("Shopping", currentUserId) +
+                            databaseHelper.getExpenseByCategory("Bills & Utilities", currentUserId) +
+                            databaseHelper.getExpenseByCategory("Entertainment", currentUserId) +
+                            databaseHelper.getExpenseByCategory("Other", currentUserId);
         } catch (Exception e) {
             Log.e(TAG, "Error computing total spent: " + e.getMessage(), e);
         }
